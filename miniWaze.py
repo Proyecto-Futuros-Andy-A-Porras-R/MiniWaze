@@ -3,9 +3,12 @@ import tkinter
 # funcion que valida si el usuario y la contraseña son correctos
 def validarUsuario(usuario, contrasena):
     usuarios = retonarUsuarios()
+    print("usuarios")
+    print(usuarios)
     for nombre in usuarios:
-        if nombre[0] == usuario:
-            if nombre[1] == contrasena:
+        print(nombre[0][0], usuario, contrasena)
+        if nombre[0][0] == usuario:
+            if nombre[1][0] == contrasena:
                 return True
     return False
 
@@ -17,16 +20,17 @@ def retonarUsuarios():
     for linea in open("usuarios.txt"):
         nombre = ""
         contrasena = ""
-        for caracter in linea:
-            if caracter == ";":
+        i = 0
+        for letra in linea:
+            if letra == ";" or letra == "\n":
+                i += 1
                 continue
-            nombre += caracter
-        for caracter in linea:
-            if caracter == "/n":
-                continue
-            contrasena += caracter
+            if i == 0:
+                nombre += letra
+            elif i == 1:
+                contrasena += letra
 
-        usuarios += [nombre, contrasena]
+        usuarios += [[[nombre],[contrasena]]]
     return usuarios
 
 
@@ -55,7 +59,6 @@ def leerArchivo():
         else:
             fila += [linea[i]]
     return mapa
-
 
 
 

@@ -69,7 +69,96 @@ def ventanaPrincipal():
 
     ventanaPrincipal.mainloop()
 
-# funcion que carga el mapa
+# ventana para cargar el mapa
+def cargarMapa():
+    # se oculta la ventana principal
+    ventanaPrincipal.withdraw()
+    global ventanaCargarMapa
+    ventanaCargarMapa = tk.Tk()
+    ventanaCargarMapa.title("Cargar mapa")
+    ventanaCargarMapa.geometry("600x600")
+    ventanaCargarMapa.configure(background="black")
+
+    # creacion de los labels
+    labelNombreMapa = tk.Label(ventanaCargarMapa, text="Nombre del mapa", bg="black", fg="white")
+    labelNombreMapa.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    # labelNombreArchivo = tk.Label(ventanaCargarMapa, text="Nombre del archivo", bg="black", fg="white")
+    # labelNombreArchivo.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    # creacion de los entrys
+    entryNombreMapa = tk.Entry(ventanaCargarMapa)
+    entryNombreMapa.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    # entryNombreArchivo = tk.Entry(ventanaCargarMapa)
+    # entryNombreArchivo.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    # creacion de los botones
+    botonCargar = tk.Button(ventanaCargarMapa, text="Cargar", command=lambda: cargarMapaInterfaz(entryNombreMapa.get()))
+    botonCargar.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    # el boton de salir vuelve a la ventana principal
+    botonSalir = tk.Button(ventanaCargarMapa, text="Salir", command=lambda: cargarVentanaAnterior(ventanaPrincipal, ventanaCargarMapa))
+    botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    ventanaCargarMapa.mainloop()
+
+# cargar ventana anterior
+def cargarVentanaAnterior(ventanaAnterior, ventanaActual):
+    if ventanaAnterior == ventanaPrincipal:
+        ventanaActual.destroy()
+        ventanaPrincipal.deiconify()
+"""
+funcion que carga el mapa en la interfaz
+el mapa se carga usando usando el metodo cargarMapa de la clase MiniWaze,
+esa funcion retorna una matriz con el mapa, esa matriz se recorre y se van
+creando los labels que representan cada posicion del mapa
+"""
+def cargarMapaInterfaz(nombreMapa):
+    # ventanaCargarMapa.destroy()
+    global ventanaMapa # ventana que muestra el mapa
+    ventanaMapa = tk.Tk()
+    ventanaMapa.title(nombreMapa)
+    ventanaMapa.geometry("600x600")
+    ventanaMapa.configure(background="black")
+    mapa = miniWaze.cargarMapa()
+    filaTotal = contarFilas(mapa)
+    columnaTotal = totalColumnas(mapa)
+    filaActual = 0
+    columnaActual = 0
+    for fila in range(filaTotal):
+        for columna in range(columnaTotal):
+            # si es 0 es un espacio vacio
+            if mapa[fila][columna] == '0':
+                label = tk.Label(ventanaMapa, text=" ", bg="black", fg="white")
+                label.grid(row=fila, column=columna)
+            # cualquier otro caso se muestra el numero o letra
+            else:
+                label = tk.Label(ventanaMapa, text=mapa[fila][columna], bg="black", fg="white")
+                label.grid(row=fila, column=columna)
+                columnaActual = columna
+        filaActual = fila
+    # creacion de los botones
+    botonSalir = tk.Button(ventanaMapa, text="Salir", command=lambda: ventanaMapa.destroy())
+    botonSalir.grid(row=filaActual+1, column=columnaActual+1)
+
+
+    ventanaMapa.mainloop()
+
+
+# ventana para seleccionar el destino
+
+def contarFilas(mapa):
+    filaTotal = 0
+    for fila in mapa:
+        filaTotal += 1
+    return filaTotal
+
+def totalColumnas(mapa):
+    columnaTotal = 0
+    for fila in mapa:
+        for columna in fila:
+            columnaTotal += 1
+        return columnaTotal
+
+
 
 
 

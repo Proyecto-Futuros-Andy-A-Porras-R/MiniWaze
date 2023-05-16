@@ -46,20 +46,35 @@ def contarLetras(texto):
 """
 lectura de archivo csv
 """
-def leerArchivo():
+def cargarMapa():
     archivo = open("mapa.csv")
+    datos = archivo.readlines()
     mapa = []
     i = 0
     fila = []
-    for linea in archivo:
-        if linea == "\n":
-            mapa += [fila]
-        elif linea[i] == ";":
-            continue 
-        else:
-            fila += [linea[i]]
+    for linea in datos:
+        for letra in linea:
+            if letra == ";":
+                continue
+            if letra == "\n":
+                mapa += [fila]
+                fila = []
+                continue
+            else:
+                fila += [letra]
+
+
     return mapa
 
+"""
+funcion que retorna la cantidad de filas de un mapa
+"""
+def contarFilas(mapa):
+    contador = 0
+    for fila in mapa:
+        contador += 1
+    return contador
 
 
+# print(cargarMapa())
 

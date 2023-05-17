@@ -65,21 +65,20 @@ def registrarse(labelNoCuenta, botonIngresar, botonRegistrarse, entryUsuario, en
     botonRegistrarse.config(text="Registrarse", command=lambda: registrarUsuarioInterfaz(entryUsuario.get(), entryContrasena.get()))
 #--------------------------------------------------------------
 def registrarUsuarioInterfaz(usuario, contrasena):
-    datos = usuario + ";" + contrasena
+    datos = "\n" + usuario + ";" + contrasena
     archivo = open("usuarios.txt", "r")
     usuarios = archivo.read()
     archivo.close()
     
     if datos in usuarios:
         mb.showerror("Error", "El usuario ya existe")
-        return 0
     else:
         archivo = open("usuarios.txt", "a")
         archivo.write(datos)
         archivo.close()
         mb.showinfo("Exito", "Usuario registrado")
-        validarUsuarioInterfaz(usuario, contrasena)
-        return 0
+        ventanaAutenticacion.destroy()
+        ventanaPrincipal()
 #--------------------------------------------------------------
 def validarUsuarioInterfaz(usuario, contrasena):
     if miniWaze.validarUsuario(usuario, contrasena):

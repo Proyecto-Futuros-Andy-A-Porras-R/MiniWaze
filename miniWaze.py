@@ -2,37 +2,14 @@ import tkinter
 
 # funcion que valida si el usuario y la contraseña son correctos
 def validarUsuario(usuario, contrasena):
-    usuarios = retonarUsuarios()
-    print("usuarios")
-    print(usuarios)
-    for nombre in usuarios:
-        print(nombre[0][0], usuario, contrasena)
-        if nombre[0][0] == usuario:
-            if nombre[1][0] == contrasena:
-                return True
-    return False
-
-"""
-funcion que retorna una lista de usuarios
-"""
-def retonarUsuarios():
-    usuarios = []
-    for linea in open("usuarios.txt"):
-        nombre = ""
-        contrasena = ""
-        i = 0
-        for letra in linea:
-            if letra == ";" or letra == "\n":
-                i += 1
-                continue
-            if i == 0:
-                nombre += letra
-            elif i == 1:
-                contrasena += letra
-
-        usuarios += [[[nombre],[contrasena]]]
-    return usuarios
-
+    datos = usuario + ";" + contrasena
+    archivo = open("usuarios.txt", "r")
+    usuarios = archivo.read()
+    archivo.close()
+    if datos not in usuarios:
+        return False
+    else:
+        return True
 
 """
 funcion que retorna la cantidad de letras de un texto

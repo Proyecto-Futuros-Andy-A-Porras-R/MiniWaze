@@ -1,48 +1,96 @@
-# importar el archivo miniWaze.py
-import miniWaze
 import tkinter as tk
-
+import miniWaze
+from tkinter import messagebox as mb
+import csv
 inicioSeleccionado = None
 destinoSeleccionado = None
-
-# creacion de la ventana de autenticacion
+#--------------------------------------------------------------
 def ventanaAutenticacion():
     global ventanaAutenticacion
     ventanaAutenticacion = tk.Tk()
     ventanaAutenticacion.title("Autenticacion")
-    ventanaAutenticacion.geometry("350x350")
-    ventanaAutenticacion.configure(background="black")
+    #centrar ventana en la pantalla
+    x_ventana = ventanaAutenticacion.winfo_screenwidth() // 2 - 800 // 2
+    y_ventana = ventanaAutenticacion.winfo_screenheight() // 2 - 400 // 2
+    posicion = str(800) + "x" + str(400) + "+" + str(x_ventana) + "+" + str(y_ventana)
+    ventanaAutenticacion.geometry(posicion)
+    ventanaAutenticacion.iconbitmap("icono.ico")
 
-    # creacion de los labels
-    labelUsuario = tk.Label(ventanaAutenticacion, text="Usuario", bg="black", fg="white")
+    labelImagen = tk.Label(ventanaAutenticacion, bg="white")
+    labelImagen.pack(side=tk.LEFT, fill=tk.Y)
+    imagen = tk.PhotoImage(file="fondo.png")
+    labelImagen.config(image=imagen)
+    
+    frameDerecha = tk.Frame(ventanaAutenticacion, width=600, height=400, bg="white")
+    frameDerecha.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+    labelBienvenida = tk.Label(frameDerecha, text="Bienvenido/a a la app", font=("Helvetica", 20, "bold"), bg="white")
+    labelBienvenida.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    
+    labelUsuario = tk.Label(frameDerecha, text="Usuario", font=("Helvetica", 10, "bold"), bg="white")
     labelUsuario.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    labelContrasena = tk.Label(ventanaAutenticacion, text="Contraseña", bg="black", fg="white")
-    labelContrasena.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-
-    # creacion de los entrys
-    entryUsuario = tk.Entry(ventanaAutenticacion)
+    entryUsuario = tk.Entry(frameDerecha)
     entryUsuario.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    entryContrasena = tk.Entry(ventanaAutenticacion)
+    labelContrasena = tk.Label(frameDerecha, text="Contraseña", font=("Helvetica", 10, "bold"), bg="white")
+    labelContrasena.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    
+    entryContrasena = tk.Entry(frameDerecha, show="*")
     entryContrasena.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-
-    # creacion de los botones
-    botonIngresar = tk.Button(ventanaAutenticacion, text="Ingresar", command=lambda: validarUsuarioInterfaz(entryUsuario.get(), entryContrasena.get()))
+    
+    botonIngresar = tk.Button(frameDerecha, text="Ingresar", font=("Helvetica", 10, "bold"), command=lambda: validarUsuarioInterfaz(entryUsuario.get(), entryContrasena.get()))
     botonIngresar.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    botonSalir = tk.Button(ventanaAutenticacion, text="Salir", command=lambda: ventanaAutenticacion.destroy())
+    botonIngresar.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
+
+    labelNoCuenta = tk.Label(frameDerecha, text="¿Aún no tienes cuenta?", font=("Helvetica", 10, "bold"), bg="white")
+    labelNoCuenta.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    
+    botonRegistrarse = tk.Button(frameDerecha, text="Registrarse", font=("Helvetica", 10, "bold"), command=lambda: registrarse(labelNoCuenta, botonIngresar, botonRegistrarse, entryUsuario, entryContrasena))
+    botonRegistrarse.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    botonRegistrarse.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
+
+    # boton de salir
+    botonSalir = tk.Button(frameDerecha, text="Salir", font=("Helvetica", 10, "bold"), command=lambda: ventanaAutenticacion.destroy())
     botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    botonSalir.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
 
     ventanaAutenticacion.mainloop()
-
-# funcion que valida si el usuario y la contraseña son correctos
+#--------------------------------------------------------------
+def registrarse(labelNoCuenta, botonIngresar, botonRegistrarse, entryUsuario, entryContrasena):
+    # limpia los entrys
+    entryUsuario.delete(0, tk.END)
+    entryContrasena.delete(0, tk.END)
+    botonIngresar.pack_forget()
+    # cambia el texto del label
+    labelNoCuenta.config(text="Ingresa tus datos y registrate")
+    # cambia la funcion del boton de registrarse
+    botonRegistrarse.config(text="Registrarse", command=lambda: registrarUsuarioInterfaz(entryUsuario.get(), entryContrasena.get()))
+#--------------------------------------------------------------
+def registrarUsuarioInterfaz(usuario, contrasena):
+    datos = usuario + ";" + contrasena
+    archivo = open("usuarios.txt", "r")
+    usuarios = archivo.read()
+    archivo.close()
+    
+    if datos in usuarios:
+        mb.showerror("Error", "El usuario ya existe")
+        return 0
+    else:
+        archivo = open("usuarios.txt", "a")
+        archivo.write(datos)
+        archivo.close()
+        mb.showinfo("Exito", "Usuario registrado")
+        validarUsuarioInterfaz(usuario, contrasena)
+        return 0
+#--------------------------------------------------------------
 def validarUsuarioInterfaz(usuario, contrasena):
     if miniWaze.validarUsuario(usuario, contrasena):
         ventanaAutenticacion.destroy()
         ventanaPrincipal()
+        return 0
     else:
         # mensaje de error
-        labelError = tk.Label(ventanaAutenticacion, text="Usuario o contraseña incorrectos", bg="black", fg="white")
-        labelError.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-
+        mb.showerror("Error", "Usuario o contraseña incorrectos")
+        return 0
+#--------------------------------------------------------------
 # creacion de la ventana principal
 def ventanaPrincipal():
     global ventanaPrincipal
@@ -71,7 +119,7 @@ def ventanaPrincipal():
     botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
     ventanaPrincipal.mainloop()
-
+#--------------------------------------------------------------
 # ventana para cargar el mapa
 def cargarMapaInterfaz():
     # se oculta la ventana principal
@@ -102,7 +150,7 @@ def cargarMapaInterfaz():
     botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
     ventanaCargarMapa.mainloop()
-
+#--------------------------------------------------------------
 # cargar ventana anterior
 def cargarVentanaAnterior(ventanaAnterior, ventanaActual):
     if ventanaAnterior == ventanaPrincipal:
@@ -122,12 +170,10 @@ el mapa se carga usando usando el metodo cargarMapa de la clase MiniWaze,
 esa funcion retorna una matriz con el mapa, esa matriz se recorre y se van
 creando los labels que representan cada posicion del mapa
 """
-import tkinter as tk
-import csv
-
+#--------------------------------------------------------------
 inicioSeleccionado = None
 destinoSeleccionado = None
-
+#--------------------------------------------------------------
 def cargarMapaInterfaz2(nombreMapa):
     global ventanaMapa
     ventanaMapa = tk.Tk()
@@ -168,17 +214,17 @@ def cargarMapaInterfaz2(nombreMapa):
     botonSalir.grid(row=8, column=columnaActual+3)
 
     ventanaMapa.mainloop()
-
+#--------------------------------------------------------------
 def seleccionarInicio():
     global inicioSeleccionado
     ventanaMapa.bind("<Button-1>", setInicio)
     inicioSeleccionado = None
-
+#--------------------------------------------------------------
 def seleccionarDestino():
     global destinoSeleccionado
     ventanaMapa.bind("<Button-1>", setDestino)
     destinoSeleccionado = None
-
+#--------------------------------------------------------------
 def setInicio(event):
     global inicioSeleccionado
     x = ventanaMapa.winfo_pointerx() - ventanaMapa.winfo_rootx()
@@ -187,7 +233,7 @@ def setInicio(event):
     ventanaMapa.unbind("<Button-1>")
     print("Punto de inicio:", inicioSeleccionado)
     # cargarMapaInterfaz("Mapa de la Ciudad")
-
+#--------------------------------------------------------------
 def setDestino(event):
     global destinoSeleccionado
     x = ventanaMapa.winfo_pointerx() - ventanaMapa.winfo_rootx()
@@ -196,7 +242,7 @@ def setDestino(event):
     ventanaMapa.unbind("<Button-1>")
     print("Punto de destino:", destinoSeleccionado)
     # cargarMapaInterfaz("Mapa de la Ciudad")
-
+#--------------------------------------------------------------
 def calcularRuta():
     global inicioSeleccionado
     global destinoSeleccionado
@@ -207,9 +253,7 @@ def calcularRuta():
         print("Punto de destino:", destinoSeleccionado)
     else:
         print("Debe seleccionar un punto de inicio y un punto de destino")
-
-    
-
+#--------------------------------------------------------------
 """
 c.  Seleccionar destino 
 Una vez cargado el mapa, debe permitir al usuario ubicar su punto inicial y su destino en el 
@@ -224,24 +268,19 @@ o rutas, una vez realizado esto la aplicación le muestra la ruta de menor costo
 opción, de lo contrario, el usuario puede visualizar cada una de las rutas y seleccionar el que 
 más le convenga.  
 """
-
-
+#--------------------------------------------------------------
 def contarFilas(mapa):
     filaTotal = 0
     for fila in mapa:
         filaTotal += 1
     return filaTotal
-
+#--------------------------------------------------------------
 def totalColumnas(mapa):
     columnaTotal = 0
     for fila in mapa:
         for columna in fila:
             columnaTotal += 1
         return columnaTotal
-
-
-
-
-
+#--------------------------------------------------------------
 # ejecucion de la ventana de autenticacion
 ventanaAutenticacion()

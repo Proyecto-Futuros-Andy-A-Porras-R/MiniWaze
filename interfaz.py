@@ -2,8 +2,8 @@ import tkinter as tk
 import miniWaze
 from tkinter import messagebox as mb
 import csv
-inicioSeleccionado = None
-destinoSeleccionado = None
+filaActual = None
+columnaActual = None
 #--------------------------------------------------------------
 def ventanaAutenticacion():
     global ventanaAutenticacion
@@ -170,20 +170,26 @@ esa funcion retorna una matriz con el mapa, esa matriz se recorre y se van
 creando los labels que representan cada posicion del mapa
 """
 #--------------------------------------------------------------
-inicioSeleccionado = None
-destinoSeleccionado = None
-#--------------------------------------------------------------
 def cargarMapaInterfaz2(nombreMapa):
     global ventanaMapa
     ventanaMapa = tk.Tk()
     ventanaMapa.title(nombreMapa)
     ventanaMapa.geometry("600x600")
     ventanaMapa.configure(background="white")
+    global mapa 
     mapa = miniWaze.cargarMapa()
-    filaTotal = contarFilas(mapa)
-    columnaTotal = totalColumnas(mapa)
-    filaActual = 0
-    columnaActual = 0
+    global inicioSeleccionado
+    inicioSeleccionado = [-1,-1]
+    global destinoSeleccionado
+    destinoSeleccionado = [-1,-1]
+    copiaMapa = mapa
+    filaTotal = contarFilas(copiaMapa)
+    columnaTotal = totalColumnas(copiaMapa)
+    mostrarMapaInterfaz(filaTotal, columnaTotal)    
+    
+    ventanaMapa.mainloop()
+
+def mostrarMapaInterfaz(filaTotal, columnaTotal):
     for fila in range(filaTotal):
         for columna in range(columnaTotal):
             if mapa[fila][columna] == '0':
@@ -191,15 +197,20 @@ def cargarMapaInterfaz2(nombreMapa):
                 label.grid(row=fila, column=columna)
             else:
                 symbol = mapa[fila][columna]
-                if (fila, columna) == inicioSeleccionado:
-                    symbol = "S"
-                elif (fila, columna) == destinoSeleccionado:
-                    symbol = "D"
+                print(f"fila: {fila} columna: {columna}, ubicacion inicio: {inicioSeleccionado}, ubicacion destino: {destinoSeleccionado}")
+                if fila == inicioSeleccionado[0] and columna == inicioSeleccionado[1]:
+                    label = tk.Label(ventanaMapa, text=symbol, font=("Arial", 12), width=1, height=1, bg="green", fg="green")
+                    label.grid(row=fila, column=columna)
+                    continue
+                elif fila == destinoSeleccionado[0] and columna == destinoSeleccionado[1]:
+                    label = tk.Label(ventanaMapa, text=symbol, font=("Arial", 12), width=1, height=1, bg="red", fg="red")
+                    label.grid(row=fila, column=columna)
+                    continue
                 label = tk.Label(ventanaMapa, text=symbol, font=("Arial", 12), width=1, height=1, bg="white", fg="black")
                 label.grid(row=fila, column=columna)
                 columnaActual = columna
         filaActual = fila
-    
+
     botonSeleccionarInicio = tk.Button(ventanaMapa, text="Seleccionar punto de inicio", command=seleccionarInicio,font=("Arial", 7), height=1, bg="white", fg="black")
     botonSeleccionarInicio.grid(row=5, column=columnaActual+3)
 
@@ -212,39 +223,61 @@ def cargarMapaInterfaz2(nombreMapa):
     botonSalir = tk.Button(ventanaMapa, text="Salir", command=ventanaMapa.destroy, font=("Arial", 7), height=1, bg="white", fg="black")
     botonSalir.grid(row=8, column=columnaActual+3)
 
-    ventanaMapa.mainloop()
+def borrarMapaInterfaz():
+    for widget in ventanaMapa.winfo_children():
+        widget.destroy()
+
 #--------------------------------------------------------------
 def seleccionarInicio():
-    global inicioSeleccionado
     ventanaMapa.bind("<Button-1>", setInicio)
-    inicioSeleccionado = None
+   
+    
+
+def modificarMapa(posicion,valor):
+    print("posicion:",posicion, "valor:", valor, "mapa:", mapa)
+    if posicion[0] < 0 or posicion[1] < 0:
+        return
+    if posicion[0] > contarFilas(mapa) or posicion[1] > totalColumnas(mapa):
+        return
+    mapa[posicion[0]][posicion[1]] = valor
+
+
 #--------------------------------------------------------------
 def seleccionarDestino():
-    global destinoSeleccionado
     ventanaMapa.bind("<Button-1>", setDestino)
-    destinoSeleccionado = None
+
 #--------------------------------------------------------------
 def setInicio(event):
-    global inicioSeleccionado
     x = ventanaMapa.winfo_pointerx() - ventanaMapa.winfo_rootx()
     y = ventanaMapa.winfo_pointery() - ventanaMapa.winfo_rooty()
-    inicioSeleccionado = [y // 23, x // 16]
+    inicioSeleccionado1 = [y // 25, x // 15]
+    print("Punto de inicio:", inicioSeleccionado1)
+    # modificarMapa(inicioSeleccionado,'1')
+    borrarMapaInterfaz()
+    filaTotal, columnaTotal = contarFilas(mapa), totalColumnas(mapa)
+    # pasar el valor de inicioSeleccionado1 a la variable global inicioSeleccionado
+    inicioSeleccionado[0] = inicioSeleccionado1[0]
+    inicioSeleccionado[1] = inicioSeleccionado1[1]
+    mostrarMapaInterfaz(filaTotal, columnaTotal)
     ventanaMapa.unbind("<Button-1>")
-    print("Punto de inicio:", inicioSeleccionado)
     # cargarMapaInterfaz("Mapa de la Ciudad")
 #--------------------------------------------------------------
 def setDestino(event):
-    global destinoSeleccionado
     x = ventanaMapa.winfo_pointerx() - ventanaMapa.winfo_rootx()
     y = ventanaMapa.winfo_pointery() - ventanaMapa.winfo_rooty()
-    destinoSeleccionado = [y // 23, x // 16]
+    destinoSeleccionado1 = [y // 25, x // 15]
+    print("Punto de destino:", destinoSeleccionado1)
+    # modificarMapa(destinoSeleccionado,'2')
+    borrarMapaInterfaz()
+    filaTotal, columnaTotal = contarFilas(mapa), totalColumnas(mapa)
+    # pasar el valor de destinoSeleccionado1 a la variable global destinoSeleccionado
+    destinoSeleccionado[0] = destinoSeleccionado1[0]
+    destinoSeleccionado[1] = destinoSeleccionado1[1]
+    mostrarMapaInterfaz(filaTotal, columnaTotal)
     ventanaMapa.unbind("<Button-1>")
-    print("Punto de destino:", destinoSeleccionado)
     # cargarMapaInterfaz("Mapa de la Ciudad")
 #--------------------------------------------------------------
 def calcularRuta():
-    global inicioSeleccionado
-    global destinoSeleccionado
     if inicioSeleccionado is not None and destinoSeleccionado is not None:
         # Realizar el cálculo de la ruta utilizando las coordenadas de inicio y destino seleccionadas
         # ...

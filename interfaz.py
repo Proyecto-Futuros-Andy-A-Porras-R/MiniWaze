@@ -277,29 +277,129 @@ def setDestino(event):
     ventanaMapa.unbind("<Button-1>")
     # cargarMapaInterfaz("Mapa de la Ciudad")
 #--------------------------------------------------------------
+"""
+Cuando  el  usuario  calcule  la  duración  de  su  trayecto  debe  tomar  en  cuenta  que  su  valor 
+puede variar según la hora del día en que realiza esta operación. A continuación, se muestra 
+los valores para cada uno de los elementos del mapa.
+"""
+
 def calcularRuta():
-    if inicioSeleccionado is not None and destinoSeleccionado is not None:
-        # Realizar el cálculo de la ruta utilizando las coordenadas de inicio y destino seleccionadas
-        # ...
-        print("Punto de inicio:", inicioSeleccionado)
-        print("Punto de destino:", destinoSeleccionado)
-    else:
-        print("Debe seleccionar un punto de inicio y un punto de destino")
+    # L son calles donde su direccion de navegacion es de derecha a izquierda
+    # N son avenidas donde su direccion de navegacion es del sur al norte
+    # C son son las intersecciones de las calles y avenidas
+    # R son calles donde su direccion de navegacion es de izquierda a derecha
+    # S son avenidas donde su direccion de navegacion es del norte al sur
+    # ND son aquellas calles donde se puede navegar en ambas direcciones
+    # L y R calles, en horas pico 2, hora normal 2
+    # N y S avenidas, en horas pico 4, hora normal 1
+    # C cruces, en horas pico 3, hora normal 2
+    horasTotales = 0
+    filaActual = inicioSeleccionado[0]
+    columnaActual = inicioSeleccionado[1]
+    while filaActual != destinoSeleccionado[0] or columnaActual != destinoSeleccionado[1]:
+        if filaActual == destinoSeleccionado[0] and columnaActual == destinoSeleccionado[1]:
+            break
+        if mapa[filaActual][columnaActual] == 'L':
+            columnaActual -= 1
+            horasTotales += 2
+        elif mapa[filaActual][columnaActual] == 'N':
+            filaActual -= 1
+            horasTotales += 4
+        elif mapa[filaActual][columnaActual] == 'C':
+            accionElegida = seleccionarCamino(filaActual, columnaActual)
+            if accionElegida == 1:
+                columnaActual -= 1
+                horasTotales += 2
+            elif accionElegida == 2:
+                filaActual -= 1
+                horasTotales += 2
+            elif accionElegida == 3:
+                columnaActual += 1
+                horasTotales += 2
+            elif accionElegida == 4:
+                filaActual += 1
+                horasTotales += 2
+        elif mapa[filaActual][columnaActual] == 'R':
+            columnaActual += 1
+            horasTotales += 2
+        elif mapa[filaActual][columnaActual] == 'S':
+            filaActual += 1
+            horasTotales += 4
+        elif mapa[filaActual][columnaActual] == 'ND':
+            accionElegida = seleccionarCamino(filaActual, columnaActual)
+            if accionElegida == 1:
+                columnaActual -= 1
+                horasTotales += 2
+            elif accionElegida == 2:
+                filaActual -= 1
+                horasTotales += 2
+            elif accionElegida == 3:
+                columnaActual += 1
+                horasTotales += 2
+            elif accionElegida == 4:
+                filaActual += 1
+                horasTotales += 2
+    print("El tiempo total de su trayecto es de:", horasTotales, "horas")
+    return horasTotales
 #--------------------------------------------------------------
-"""
-c.  Seleccionar destino 
-Una vez cargado el mapa, debe permitir al usuario ubicar su punto inicial y su destino en el 
-mapa,  para  ello  depende  de  la  creatividad  del  programador  el  cómo  representarlo,  se  le 
-recomienda el uso del mouse. 
- 
-La  aplicación  debe  permitir  al  usuario  insertar  una  hora,  esto  es  para  poder  calcular  la 
-trayectoria ya sean en “horas pico” o fuera de ella 
- 
-Con los puntos de inicio y fin definido, el usuario podrá indicar al sistema que calcule la ruta 
-o rutas, una vez realizado esto la aplicación le muestra la ruta de menor costo como primera 
-opción, de lo contrario, el usuario puede visualizar cada una de las rutas y seleccionar el que 
-más le convenga.  
-"""
+# selecciona si debe ir por la derecha o izquierda, arriva o abajo
+def seleccionarCamino(filaActual, columnaActual):
+    # se usa la variable global mapa
+    # se usa la variable global destinoSeleccionado
+    # para saber si el destino esta a la derecha o izquierda
+    if destinoSeleccionado[1] > columnaActual:
+        # si el destino esta a la derecha
+        # se debe ir por la derecha
+        # se valida que no se salga del mapa y que no se choque con un edificio
+        if columnaActual + 1 < totalColumnas(mapa) and mapa[filaActual][columnaActual + 1] != '0':
+            return 1
+        # si no se puede ir por la derecha se va por la izquierda
+        elif columnaActual - 1 >= 0 and mapa[filaActual][columnaActual - 1] != '0':
+            return 3
+        # si no se puede ir por la derecha ni por la izquierda se va por arriba
+        elif filaActual - 1 >= 0 and mapa[filaActual - 1][columnaActual] != '0':
+            return 2
+        # si no se puede ir por la derecha ni por la izquierda ni por arriba se va por abajo
+        elif filaActual + 1 < contarFilas(mapa) and mapa[filaActual + 1][columnaActual] != '0':
+            return 4
+    elif destinoSeleccionado[1] < columnaActual:
+        if columnaActual - 1 >= 0 and mapa[filaActual][columnaActual - 1] != '0':
+            return 3
+        elif columnaActual + 1 < totalColumnas(mapa) and mapa[filaActual][columnaActual + 1] != '0':
+            return 1
+        elif filaActual - 1 >= 0 and mapa[filaActual - 1][columnaActual] != '0':
+            return 2
+        elif filaActual + 1 < contarFilas(mapa) and mapa[filaActual + 1][columnaActual] != '0':
+            return 4
+    # para saber si el destino esta arriba o abajo
+    elif destinoSeleccionado[0] > filaActual:
+        # si el destino esta abajo
+        # se debe ir por abajo
+        # se valida que no se salga del mapa y que no se choque con un edificio
+        if filaActual + 1 < contarFilas(mapa) and mapa[filaActual + 1][columnaActual] != '0':
+            return 4
+        # si no se puede ir por abajo se va por arriba
+        elif filaActual - 1 >= 0 and mapa[filaActual - 1][columnaActual] != '0':
+            return 2
+        # si no se puede ir por abajo ni por arriba se va por la derecha
+        elif columnaActual + 1 < totalColumnas(mapa) and mapa[filaActual][columnaActual + 1] != '0':
+            return 1
+        # si no se puede ir por abajo ni por arriba ni por la derecha se va por la izquierda
+        elif columnaActual - 1 >= 0 and mapa[filaActual][columnaActual - 1] != '0':
+            return 3
+    elif destinoSeleccionado[0] < filaActual:
+        if filaActual - 1 >= 0 and mapa[filaActual - 1][columnaActual] != '0':
+            return 2
+        elif filaActual + 1 < contarFilas(mapa) and mapa[filaActual + 1][columnaActual] != '0':
+            return 4
+        elif columnaActual + 1 < totalColumnas(mapa) and mapa[filaActual][columnaActual + 1] != '0':
+            return 1
+        elif columnaActual - 1 >= 0 and mapa[filaActual][columnaActual - 1] != '0':
+            return 3
+
+
+#--------------------------------------------------------------
+
 #--------------------------------------------------------------
 def contarFilas(mapa):
     filaTotal = 0

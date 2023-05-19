@@ -2,8 +2,8 @@ import tkinter as tk
 import miniWaze
 from tkinter import messagebox as mb
 import csv
-filaActual = None
-columnaActual = None
+# filaActual = None
+# columnaActual = None
 #--------------------------------------------------------------
 def ventanaAutenticacion():
     global ventanaAutenticacion
@@ -118,6 +118,69 @@ def ventanaPrincipal():
     botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
     ventanaPrincipal.mainloop()
+
+#--------------------------------------------------------------
+# se guarda el destino en el archivo de texto
+def guardarDestino():
+    if inicioSeleccionado == [-1,-1] or destinoSeleccionado == [-1,-1]:
+        # mensaje de error
+        mb.showerror("Error", "No se ha seleccionado un destino")
+        return 0
+    try:
+        archivo = open("destinos.txt", "a")
+        # se escribe el destino en el archivo de texto
+        archivo.write(inicioSeleccionado + ";" + finalSeleccionado + "\n")
+        # se cierra el archivo de texto
+        archivo.close()
+        # mensaje de exito
+        mb.showinfo("Exito", "Destino guardado")
+    except:
+        # mensaje de error
+        mb.showerror("Error", "No se pudo guardar el destino")
+
+
+    # creacion de los labels
+    labelNombreDestino = tk.Label(ventanaGuardarDestino, text="Nombre del destino", bg="black", fg="white")
+    labelNombreDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    # creacion de los entrys
+    entryNombreDestino = tk.Entry(ventanaGuardarDestino)
+    entryNombreDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    # creacion de los botones
+    botonGuardar = tk.Button(ventanaGuardarDestino, text="Guardar", command=lambda: guardarDestinoInterfaz(entryNombreDestino.get()))
+    botonGuardar.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    botonCancelar = tk.Button(ventanaGuardarDestino, text="Cancelar", command=lambda: cancelarGuardarDestino())
+    botonCancelar.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    ventanaGuardarDestino.mainloop()
+
+#--------------------------------------------------------------
+# se borra el destino del archivo de texto
+def borrarDestino():
+    if inicioSeleccionado == [-1,-1] or destinoSeleccionado == [-1,-1]:
+        # mensaje de error
+        mb.showerror("Error", "No se ha seleccionado un destino")
+        return 0
+    try:
+        archivo = open("destinos.txt", "r")
+        # se lee el archivo de texto
+        destinos = archivo.readlines()
+        # se cierra el archivo de texto
+        archivo.close()
+        # se elimina el destino del archivo de texto
+        destinos.remove(inicioSeleccionado + ";" + destinoSeleccionado + "\n")
+        # se abre el archivo de texto
+        archivo = open("destinos.txt", "w")
+        # se escribe el archivo de texto
+        archivo.writelines(destinos)
+        # se cierra el archivo de texto
+        archivo.close()
+        # mensaje de exito
+        mb.showinfo("Exito", "Destino borrado")
+    except:
+        # mensaje de error
+        mb.showerror("Error", "No se pudo borrar el destino")
 #--------------------------------------------------------------
 # ventana para cargar el mapa
 def cargarMapaInterfaz():

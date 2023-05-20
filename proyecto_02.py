@@ -111,7 +111,7 @@ def ventanaPrincipal():
     #opcion ayuda
     menuAyuda = tk.Menu(barraMenu, tearoff=0)
     menuAyuda.add_command(label="Acerca de", command=lambda: mb.showinfo("Acerca de", "proyecto en construccion"))
-    menuAyuda.add_command(label="Ayuda", command=lambda: mb.showinfo("Ayuda", "Para cargar un mapa, seleccione la opción de cargar archivo del menú Archivo\n\nPara cerrar sesión, seleccione la opción de cerrar sesión del menú Archivo\n\nPara salir de la aplicación, seleccione la opción de salir del menú Archivo"))
+    menuAyuda.add_command(label="Ayuda", command=lambda: mb.showinfo("Ayuda", "Para cargar un mapa, seleccione la opción de cargar archivo del menú Archivo\n\nPara salir del programa, seleccione la opción de salir sesión del menú Archivo, o la opción salir del menú principal\n\nPara tener acceso a todas las funciones, primero debe cargar un mapa o crear uno"))
     barraMenu.add_cascade(label="Ayuda", menu=menuAyuda)
     #configuracion de la barra de menu
     ventanaPrincipal.config(menu=barraMenu)
@@ -123,6 +123,40 @@ def ventanaPrincipal():
     frameIzquierdo = tk.Frame(ventanaPrincipal, width=400, height=ventanaPrincipal.winfo_height(), bg="white")
     #colocar el frame a la izquierda
     frameIzquierdo.pack(side="left", fill="both", expand=True)
+
+    #label inicial
+    #bienvenida al usuario y le pide que cargue un archivo paara poder continuar
+    labelInicial = tk.Label(frameIzquierdo, text="Bienvenid@ al Mini Waze", font=("Helvetica", 30, "bold"), bg="white")
+    labelInicial2 = tk.Label(frameIzquierdo, text="por favor cargue un archivo para continuar", font=("Helvetica", 16, "bold"), bg="white")
+    labelInicial.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    labelInicial2.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    
+    #frame derecho para el mapa
+    global frameDerecho
+    frameDerecho = tk.Frame(ventanaPrincipal, width=400, height=ventanaPrincipal.winfo_height(), bg="white")
+    frameDerecho.pack(side="right", fill="both", expand=True)
+    imagenFondo = tk.PhotoImage(file="mapa.png")
+    labelFondo = tk.Label(frameDerecho, image=imagenFondo)
+    labelFondo.place(x=0, y=0, relwidth=1, relheight=1)
+    
+    ventanaPrincipal.mainloop()
+
+def cargarArchivo():
+    #solo acepta archivos csv
+    archivo = fd.askopenfilename(
+            filetypes=[("Archivos CSV", "*.csv")],
+            title="Seleccionar archivo CSV"
+        )
+    if archivo != "":
+        cargarMapaInterfaz(archivo)
+
+#-----------------FUNCIONES PARA WIDGETS-----------------
+#despliega las opciones del menu
+def mostrarOpciones():
+    #limpia el frame izquierdo
+    for widget in frameIzquierdo.winfo_children():
+        widget.destroy()    
+
     #seleccionar destino
     botonSeleccionarDestino = tk.Button(frameIzquierdo, text="Seleccionar destino", font=("Helvetica", 10, "bold"), command=lambda: seleccionarRuta())
     botonSeleccionarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
@@ -152,48 +186,27 @@ def ventanaPrincipal():
     botonSalir = tk.Button(frameIzquierdo, text="Salir", font=("Helvetica", 10, "bold"), command=lambda: ventanaPrincipal.destroy())
     botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonSalir.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
-    
-    #frame derecho para el mapa
-    global frameDerecho
-    frameDerecho = tk.Frame(ventanaPrincipal, width=400, height=ventanaPrincipal.winfo_height(), bg="white")
-    frameDerecho.pack(side="right", fill="both", expand=True)
-    imagenFondo = tk.PhotoImage(file="mapa.png")
-    labelFondo = tk.Label(frameDerecho, image=imagenFondo)
-    labelFondo.place(x=0, y=0, relwidth=1, relheight=1)
-    
-    bloquearBotones()
-    ventanaPrincipal.mainloop()
 
-def cargarArchivo():
-    #solo acepta archivos csv
-    archivo = fd.askopenfilename(
-            filetypes=[("Archivos CSV", "*.csv")],
-            title="Seleccionar archivo CSV"
-        )
-    if archivo != "":
-        cargarMapaInterfaz(archivo)
+#quita las opciones del menu
+def quitarOpciones():
+    for widget in frameIzquierdo.winfo_children():
+        widget.destroy()
+    botonesPrincipales = []
 
-#-----------------FUNCIONES PARA WIDGETS-----------------
-# bloquea los botones de opciones del menu
-def bloquearBotones():
-    for boton in botonesPrincipales:
-        boton.config(state=tk.DISABLED)
-
-def habilitarBotones():
-    for boton in botonesPrincipales:
-        boton.config(state=tk.NORMAL)
-
+# habilita los botones del mapa
 def habilitarMapa():
     for fila in botones:
         for boton in fila:
             boton.config(state=tk.NORMAL)
 
+# bloquea los botones del mapa
 def bloquearMapa():
     for fila in botones:
         for boton in fila:
             boton.config(state=tk.DISABLED)
 
 #-----------------FUNCIONES PARA MAPA-----------------
+#muestra un mapa de botones en la parte derecha de la interfaz
 def cargarMapaInterfaz(archivo):
     global mapa 
     mapa = cargarMapa(archivo)
@@ -204,15 +217,11 @@ def cargarMapaInterfaz(archivo):
     copiaMapa = mapa
     filaTotal = contarFilas(copiaMapa)
     columnaTotal = totalColumnas(copiaMapa)
-    habilitarBotones()
     #limpiar frame derecho
     for widget in frameDerecho.winfo_children():
         widget.destroy()
 
-    for widget in frameIzquierdo.winfo_children():
-        if widget.cget("text") == "Seleccionar punto de inicio" or widget.cget("text") == "Seleccionar punto de destino" or widget.cget("text") == "Calcular ruta" or widget.cget("text") == "Confirmar ruta":
-            widget.destroy()
-
+    mostrarOpciones()
     global botones
     botones = []
     for fila in range(filaTotal):
@@ -240,8 +249,10 @@ def cargarMapaInterfaz(archivo):
         botones.append(filaBotones)
     bloquearMapa()
 
-# reinicia los colores de los botones al color original (blanco)
-# E: colores= entero positivo donde False es decolorar solo el inicio y True es ambos (inicio y destino)
+""" 
+reinicia los colores de los botones al color original (blanco)
+E: colores= entero positivo donde 0=verde, 1=rojo, 2=ambos
+"""
 def decolorar(colores):
     for fila in botones:
         for boton in fila:
@@ -259,7 +270,7 @@ def decolorar(colores):
             
 #despliega el menu para seleccionar el punto de inicio y destino, tambien para calcular la ruta
 def seleccionarRuta():
-    bloquearBotones()
+    quitarOpciones()
     botonSeleccionarInicio = tk.Button(frameIzquierdo, text="Seleccionar punto de inicio", command=seleccionarInicio,font=("Arial", 7), height=1, bg="white", fg="black")
     botonSeleccionarInicio.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
@@ -274,21 +285,20 @@ def seleccionarRuta():
 
 #desaparece los botones de opciones de seleccionar ruta
 def confirmarRuta():
-    #desaparece los botontes de seleccionar ruta
-    for widget in frameIzquierdo.winfo_children():
-        if widget.cget("text") == "Seleccionar punto de inicio" or widget.cget("text") == "Seleccionar punto de destino" or widget.cget("text") == "Calcular ruta" or widget.cget("text") == "Confirmar ruta":
-            widget.destroy()
-    habilitarBotones()
+    mostrarOpciones()
     bloquearMapa()
     decolorar(2)
 
-# funcion a la que responden los botones que conforman el mapa
-# E: a= fila del boton, b= columna del boton
-# S: cambia el color del boton seleccionado
-# R: el boton no debe ser de otro color que no sea blanco
+""" 
+ funcion a la que responden los botones que conforman el mapa
+ E: a= fila del boton, b= columna del boton
+ S: cambia el color del boton seleccionado
+ R: el boton no debe ser de otro color que no sea blanco
+"""
 def seleccionarBoton(a,b):
     boton1 = botones[a][b]
     if(boton1.cget("bg") == "black" or boton1.cget("bg") == "red" or boton1.cget("bg") == "green"):
+        mb.showerror("Error", "Seleccione otro punto\nEl seleccionado ya está ocupado o es un obstáculo")
         return 0
     elif inicioSeleccionado[0] == -1 and inicioSeleccionado[1] == -1:
         boton1.config(bg="green")
@@ -302,21 +312,21 @@ def seleccionarBoton(a,b):
         bloquearMapa()
 
 #--------------FUNCIONES DE SELECCION DE RUTA------------------
+# habilita los botones del mapa para que se seleccione el inicio
 def seleccionarInicio():
-    inicioSeleccionado[0] = -1
-    inicioSeleccionado[1] = -1
     decolorar(0)
+    inicioSeleccionado[0] = inicioSeleccionado[1] = -1
     mb.showinfo("Información", "Seleccione el punto de inicio\n cuando se seleccione, se tornará verde")
     habilitarMapa()
 
+# habilita los botones del mapa para que se seleccione el destino
 def seleccionarDestino():
     if inicioSeleccionado[0] == -1 and inicioSeleccionado[1] == -1:
-        mb.showerror("Error", "Seleccione el punto de inicio")
+        mb.showerror("Error", "Seleccione el punto de inicio primero")
         return 0
     
-    destinoSeleccionado[0] = -1
-    destinoSeleccionado[1] = -1
     decolorar(1)
+    destinoSeleccionado[0] = destinoSeleccionado[1] = -1
     mb.showinfo("Información", "Seleccione el punto de destino\n cuando se seleccione, se tornará rojo")
     habilitarMapa()
 ##############################################################################################################
@@ -439,21 +449,6 @@ def seleccionarCamino(filaActual, columnaActual):
             return 3
 ##############################################################################################################
 
-#--------------------FUNCIONES AUXILIARES----------------------
-def contarFilas(mapa):
-    filaTotal = 0
-    for fila in mapa:
-        filaTotal += 1
-    return filaTotal
-
-def totalColumnas(mapa):
-    columnaTotal = 0
-    for fila in mapa:
-        for columna in fila:
-            columnaTotal += 1
-        return columnaTotal
-#--------------------------------------------------------------
-
 #**********************SECCION DE LOGICA DEL PROGRAMA***********************
 #funcion que valida si el usuario y la contraseña son correctos
 def validarUsuario(usuario, contrasena):
@@ -500,6 +495,13 @@ def contarFilas(mapa):
     for fila in mapa:
         contador += 1
     return contador
+
+#funcion que retorna la cantidad de columnas de un mapa
+def totalColumnas(mapa):
+    columnaTotal = 0
+    for columna in mapa[0]:
+        columnaTotal += 1
+    return columnaTotal
 #----------------------FIN DE LA SECCION DE LOGICA DEL PROGRAMA----------------------
 
 #inicio del programa

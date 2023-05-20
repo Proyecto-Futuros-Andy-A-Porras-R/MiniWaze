@@ -1,7 +1,13 @@
 import tkinter as tk
-from tkinter import messagebox as mb, filedialog as fd
+from tkinter import messagebox as mb, filedialog as fd, ttk
 import csv
-    
+global inicioSeleccionado
+inicioSeleccionado = [-1,-1]
+global destinoSeleccionado
+destinoSeleccionado = [-1,-1]
+global nuevoMapa
+nuevoMapa = []
+        
 #--------------------VENTANA AUTENTICACION---------------------
 def ventanaAutenticacion():
     global ventanaAutenticacion
@@ -105,13 +111,14 @@ def ventanaPrincipal():
     #opcion cargar archivo
     menuArchivo = tk.Menu(barraMenu, tearoff=0)
     menuArchivo.add_command(label="Cargar archivo", command=lambda: cargarArchivo())
+    menuArchivo.add_command(label="Crear mapa", command=lambda: crearMapa())
     menuArchivo.add_separator()
     menuArchivo.add_command(label="Salir", command=lambda: ventanaPrincipal.destroy())
     barraMenu.add_cascade(label="Archivo", menu=menuArchivo)
     #opcion ayuda
     menuAyuda = tk.Menu(barraMenu, tearoff=0)
     menuAyuda.add_command(label="Acerca de", command=lambda: mb.showinfo("Acerca de", "proyecto en construccion"))
-    menuAyuda.add_command(label="Ayuda", command=lambda: mb.showinfo("Ayuda", "Para cargar un mapa, seleccione la opción de cargar archivo del menú Archivo\n\nPara salir del programa, seleccione la opción de salir sesión del menú Archivo, o la opción salir del menú principal\n\nPara tener acceso a todas las funciones, primero debe cargar un mapa o crear uno"))
+    menuAyuda.add_command(label="Ayuda", command=lambda: mb.showinfo("Ayuda", "Para cargar un mapa, seleccione la opción de cargar archivo del menú Archivo\n\nPara salir del programa, seleccione la opción de salir del menú Archivo, o la opción salir del menú principal\n\nPara tener acceso a todas las funciones, primero debe cargar un mapa o crear uno"))
     barraMenu.add_cascade(label="Ayuda", menu=menuAyuda)
     #configuracion de la barra de menu
     ventanaPrincipal.config(menu=barraMenu)
@@ -121,24 +128,21 @@ def ventanaPrincipal():
     #todos van en el frame izquierdo, que mide la mitad del ancho de la ventana
     global frameIzquierdo
     frameIzquierdo = tk.Frame(ventanaPrincipal, width=400, height=ventanaPrincipal.winfo_height(), bg="white")
-    #colocar el frame a la izquierda
     frameIzquierdo.pack(side="left", fill="both", expand=True)
-
-    #label inicial
-    #bienvenida al usuario y le pide que cargue un archivo paara poder continuar
     labelInicial = tk.Label(frameIzquierdo, text="Bienvenid@ al Mini Waze", font=("Helvetica", 30, "bold"), bg="white")
-    labelInicial2 = tk.Label(frameIzquierdo, text="por favor cargue un archivo para continuar", font=("Helvetica", 16, "bold"), bg="white")
+    labelInicial2 = tk.Label(frameIzquierdo, text="por favor cargue un archivo o cree un mapa para continuar", font=("Helvetica", 16, "bold"), bg="white")
     labelInicial.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     labelInicial2.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    
+    labelFondo = tk.Label(frameDerecho, bg="#008CBA")
+    labelFondo.place(x=0, y=0, relwidth=1, relheight=1)
+
     #frame derecho para el mapa
     global frameDerecho
     frameDerecho = tk.Frame(ventanaPrincipal, width=400, height=ventanaPrincipal.winfo_height(), bg="white")
     frameDerecho.pack(side="right", fill="both", expand=True)
     imagenFondo = tk.PhotoImage(file="mapa.png")
-    labelFondo = tk.Label(frameDerecho, image=imagenFondo)
+    labelFondo = tk.Label(frameDerecho, image=imagenFondo, bg="#008CBA")
     labelFondo.place(x=0, y=0, relwidth=1, relheight=1)
-    
     ventanaPrincipal.mainloop()
 
 def cargarArchivo():
@@ -205,15 +209,12 @@ def bloquearMapa():
         for boton in fila:
             boton.config(state=tk.DISABLED)
 
-#-----------------FUNCIONES PARA MAPA-----------------
+#---------------------FUNCIONES PARA MAPA---------------------
 #muestra un mapa de botones en la parte derecha de la interfaz
+#E: el nombre del archivo
 def cargarMapaInterfaz(archivo):
     global mapa 
     mapa = cargarMapa(archivo)
-    global inicioSeleccionado
-    inicioSeleccionado = [-1,-1]
-    global destinoSeleccionado
-    destinoSeleccionado = [-1,-1]
     copiaMapa = mapa
     filaTotal = contarFilas(copiaMapa)
     columnaTotal = totalColumnas(copiaMapa)
@@ -311,6 +312,102 @@ def seleccionarBoton(a,b):
         destinoSeleccionado[1] = b
         bloquearMapa()
 
+#---------------FUNCIONES DE CREACION DE MAPA------------------
+# funcion para crear un mapa
+def crearMapa():
+    # limpiar frameIzquierdo
+    for widget in frameIzquierdo.winfo_children():
+        widget.destroy()
+    # limpiar frameDerecho
+    for widget in frameDerecho.winfo_children():
+        widget.destroy()
+    # limpiar botones  
+    botones = []
+    inicioSeleccionado[0] = inicioSeleccionado[1] = destinoSeleccionado[0] = destinoSeleccionado[1] = -1
+    
+    labelFilas = tk.Label(frameIzquierdo, text="Filas: ", font=("Arial", 12))
+    labelFilas.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    comboFilas = ttk.Combobox(frameIzquierdo, state="readonly", font=("Arial", 12), width=5)
+    comboFilas.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    comboFilas["values"] = [i for i in range(10, 22)]
+    comboFilas.current(0)
+
+    labelColumnas = tk.Label(frameIzquierdo, text="Columnas: ", font=("Arial", 12))
+    labelColumnas.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    comboColumnas = ttk.Combobox(frameIzquierdo, state="readonly", font=("Arial", 12), width=5)
+    comboColumnas.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    comboColumnas["values"] = [i for i in range(10, 35)]
+    comboColumnas.current(0)
+
+    botonCrearMapa = tk.Button(frameIzquierdo, text="Crear mapa", command=lambda: dibujarMapa(int(comboFilas.get()), int(comboColumnas.get())), font=("Arial", 12), height=1, bg="white", fg="black")
+    botonCrearMapa.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    botonGuardarMapa = tk.Button(frameIzquierdo, text="Guardar mapa", command=guardarMapa, font=("Arial", 12), height=1, bg="white", fg="black")
+    botonGuardarMapa.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+#dibuja el mapa para crear en el frameDerecho
+def dibujarMapa(filas, columnas):
+    # limpiar frameDerecho
+    for widget in frameDerecho.winfo_children():    
+        widget.destroy()
+    global nuevoMapa
+    nuevoMapa = []
+    for fila in range(filas):
+        filas = []
+        for columna in range(columnas):
+            boton = tk.Button(frameDerecho, text="0",font=("Arial", 12), width=1, height=1, bg="black", fg = "white", command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
+            boton.grid(row=fila, column=columna)
+            filas.append(boton)
+        nuevoMapa.append(filas)
+
+#funciones de los botones, cambian las letras de los botones
+# E: fila: total de filas, columna: total de columnas
+def cambiarColor(fila, columna):
+    boton = nuevoMapa[fila][columna]
+    # cada toque cambia a una letra, por defecto es un 0
+    # las letras son N, S, L, R, C y ND
+    if boton.cget("text") == "0":
+        boton.config(text="N")
+        boton.config(bg="white")
+        boton.config(fg="black")
+    elif boton.cget("text") == "N":
+        boton.config(text="S")
+    elif boton.cget("text") == "S":
+        boton.config(text="L")
+    elif boton.cget("text") == "L":
+        boton.config(text="R")
+    elif boton.cget("text") == "R":
+        boton.config(text="C")
+    elif boton.cget("text") == "C":
+        boton.config(text="ND")
+    else:
+        boton.config(text="0")
+        boton.config(bg="black")
+        boton.config(fg="white")
+
+#guarda el mapa en un archivo csv
+#R: si no hay nada para guardar, retorna 0 y un error diciendo que no hay nada para guardar
+def guardarMapa():
+    # validar si hay algo para guardar
+    if nuevoMapa == []:
+        mb.showerror("Error", "Primero cree un mapa")
+        return 0
+
+    # guardar mapa en un string
+    mapa = ""
+    for fila in nuevoMapa:
+        for boton in fila:
+            mapa += boton.cget("text")+";"
+        mapa = mapa[:-1]
+        mapa += "\n"
+    # quitar el ultimo salto de linea
+    mapa = mapa[:-1]
+    archivo = fd.asksaveasfile(title="Guardar mapa", mode="w", defaultextension=".csv", filetypes=[("Archivo CSV", "*.csv")])
+    if archivo is None:
+        return
+    archivo.write(mapa)
+    archivo.close()
+    mb.showinfo("Información", "Mapa guardado con éxito")
+    cargarMapaInterfaz(archivo.name)
 #--------------FUNCIONES DE SELECCION DE RUTA------------------
 # habilita los botones del mapa para que se seleccione el inicio
 def seleccionarInicio():

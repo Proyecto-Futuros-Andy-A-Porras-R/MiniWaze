@@ -444,50 +444,67 @@ def calcularRuta():
     horasTotales = 0
     filaActual = inicioSeleccionado[0]
     columnaActual = inicioSeleccionado[1]
+    bucle = 0
     while filaActual != destinoSeleccionado[0] or columnaActual != destinoSeleccionado[1]:
         posicion = mapa[filaActual][columnaActual]
+        if bucle == 150:
+            mb.showerror("Error", "No se pudo encontrar una ruta")
+            return 0
         if filaActual == destinoSeleccionado[0] and columnaActual == destinoSeleccionado[1]:
             break
         if posicion == 'L':
             columnaActual -= 1
             horasTotales += 2
+            bucle += 1
         elif posicion == 'N':
             filaActual -= 1
             horasTotales += 1
+            bucle += 1
         elif posicion == 'C':
             accionElegida = seleccionarCamino(filaActual, columnaActual)
             if accionElegida == 1:
                 columnaActual -= 1
                 horasTotales += 2
+                bucle += 1
             elif accionElegida == 2:
                 filaActual -= 1
                 horasTotales += 2
+                bucle += 1
             elif accionElegida == 3:
                 columnaActual += 1
                 horasTotales += 2
+                bucle += 1
             elif accionElegida == 4:
                 filaActual += 1
                 horasTotales += 2
+                bucle += 1
         elif posicion == 'R':
             columnaActual += 1
             horasTotales += 2
+            bucle += 1
         elif posicion == 'S':
             filaActual += 1
             horasTotales += 1
+            bucle += 1
         elif posicion == 'ND':
             accionElegida = seleccionarCamino(filaActual, columnaActual)
             if accionElegida == 1:
                 columnaActual -= 1
                 horasTotales += 2
+                bucle += 1
             elif accionElegida == 2:
                 filaActual -= 1
                 horasTotales += 2
+                bucle += 1
             elif accionElegida == 3:
                 columnaActual += 1
                 horasTotales += 2
+                bucle += 1
             elif accionElegida == 4:
                 filaActual += 1
                 horasTotales += 2
+                bucle += 1
+    
     print("El tiempo total de su trayecto es de:", horasTotales, "horas")
     # mensaje de informacion con el tiempo total
     mb.showinfo("Información", "El tiempo total de su trayecto es de: " + str(horasTotales) + " horas")

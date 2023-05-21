@@ -10,7 +10,7 @@ global nuevoMapa
 nuevoMapa = []
 global destinos 
 destinos = []
-        
+
 #--------------------VENTANA AUTENTICACION---------------------
 def ventanaAutenticacion():
     global ventanaAutenticacion
@@ -22,7 +22,6 @@ def ventanaAutenticacion():
     posicion = str(800) + "x" + str(400) + "+" + str(x_ventana) + "+" + str(y_ventana)
     ventanaAutenticacion.geometry(posicion)
     ventanaAutenticacion.iconbitmap("icono.ico")
-
     labelImagen = tk.Label(ventanaAutenticacion, bg="white")
     labelImagen.pack(side=tk.LEFT, fill=tk.Y)
     imagen = tk.PhotoImage(file="fondo.png")
@@ -32,34 +31,31 @@ def ventanaAutenticacion():
     frameDerecha.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
     labelBienvenida = tk.Label(frameDerecha, text="Bienvenido/a a la app", font=("Helvetica", 20, "bold"), bg="white")
     labelBienvenida.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    
+
     labelUsuario = tk.Label(frameDerecha, text="Usuario", font=("Helvetica", 10, "bold"), bg="white")
     labelUsuario.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     entryUsuario = tk.Entry(frameDerecha)
     entryUsuario.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     labelContrasena = tk.Label(frameDerecha, text="Contraseña", font=("Helvetica", 10, "bold"), bg="white")
     labelContrasena.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    
     entryContrasena = tk.Entry(frameDerecha, show="*")
     entryContrasena.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    
+
     botonIngresar = tk.Button(frameDerecha, text="Ingresar", font=("Helvetica", 10, "bold"), command=lambda: validarUsuarioInterfaz(entryUsuario.get(), entryContrasena.get()))
     botonIngresar.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonIngresar.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
 
     labelNoCuenta = tk.Label(frameDerecha, text="¿Aún no tienes cuenta?", font=("Helvetica", 10, "bold"), bg="white")
     labelNoCuenta.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    
     botonRegistrarse = tk.Button(frameDerecha, text="Registrarse", font=("Helvetica", 10, "bold"), command=lambda: registrarse(labelNoCuenta, botonIngresar, botonRegistrarse, entryUsuario, entryContrasena))
     botonRegistrarse.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonRegistrarse.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
-
     # boton de salir
     botonSalir = tk.Button(frameDerecha, text="Salir", font=("Helvetica", 10, "bold"), command=lambda: ventanaAutenticacion.destroy())
     botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonSalir.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
-
     ventanaAutenticacion.mainloop()
+
 
 def registrarse(labelNoCuenta, botonIngresar, botonRegistrarse, entryUsuario, entryContrasena):
     # limpia los entrys
@@ -76,7 +72,6 @@ def registrarUsuarioInterfaz(usuario, contrasena):
     archivo = open("usuarios.txt", "r")
     usuarios = archivo.read()
     archivo.close()
-    
     if datos in usuarios:
         mb.showerror("Error", "El usuario ya existe")
     else:
@@ -125,7 +120,6 @@ def ventanaPrincipal():
     barraMenu.add_cascade(label="Ayuda", menu=menuAyuda)
     #configuracion de la barra de menu
     ventanaPrincipal.config(menu=barraMenu)
-
     #creacion de los botones de opciones del menu
     #seleccionar destino, planificar destino, guardar destino, borrar destino y modificar mapa
     #todos van en el frame izquierdo, que mide la mitad del ancho de la ventana
@@ -136,8 +130,6 @@ def ventanaPrincipal():
     labelInicial2 = tk.Label(frameIzquierdo, text="por favor cargue un archivo o cree un mapa para continuar", font=("Helvetica", 16, "bold"), bg="white")
     labelInicial.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     labelInicial2.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-
-
     #frame derecho para el mapa
     global frameDerecho
     frameDerecho = tk.Frame(ventanaPrincipal, width=400, height=ventanaPrincipal.winfo_height(), bg="white")
@@ -156,13 +148,13 @@ def cargarArchivo():
     if archivo != "":
         cargarMapaInterfaz(archivo)
 
+
 #-----------------FUNCIONES PARA WIDGETS-----------------
 #despliega las opciones del menu
 def mostrarOpciones():
     #limpia el frame izquierdo
     for widget in frameIzquierdo.winfo_children():
         widget.destroy()    
-
     #seleccionar destino
     botonSeleccionarDestino = tk.Button(frameIzquierdo, text="Seleccionar destino", font=("Helvetica", 10, "bold"), command=lambda: seleccionarRuta())
     botonSeleccionarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
@@ -217,7 +209,6 @@ def habilitarMapa():
     for fila in botones:
         for boton in fila:
             boton.config(state=tk.NORMAL)
-
 # bloquea los botones del mapa
 def bloquearMapa():
     for fila in botones:
@@ -236,7 +227,6 @@ def cargarMapaInterfaz(archivo):
     #limpiar frame derecho
     for widget in frameDerecho.winfo_children():
         widget.destroy()
-
     mostrarOpciones()
     global botones
     botones = []
@@ -265,7 +255,7 @@ def cargarMapaInterfaz(archivo):
         botones.append(filaBotones)
     bloquearMapa()
 
-""" 
+"""
 reinicia los colores de los botones al color original (blanco)
 E: colores= entero positivo donde 0=verde, 1=rojo, 2=ambos
 """
@@ -284,18 +274,16 @@ def decolorar(colores):
                 if boton.cget("bg") == "green" or boton.cget("bg") == "red":
                     boton.config(bg="white")
             
+
 #despliega el menu para seleccionar el punto de inicio y destino, tambien para calcular la ruta
 def seleccionarRuta():
     quitarOpciones()
     botonSeleccionarInicio = tk.Button(frameIzquierdo, text="Seleccionar punto de inicio", command=seleccionarInicio,font=("Arial", 7), height=1, bg="white", fg="black")
     botonSeleccionarInicio.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-
     botonSeleccionarDestino = tk.Button(frameIzquierdo, text="Seleccionar punto de destino", command=seleccionarDestino, font=("Arial", 7), height=1, bg="white", fg="black")
     botonSeleccionarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-
     botonCalcularRuta = tk.Button(frameIzquierdo, text="Calcular ruta", command=calcularRuta, font=("Arial", 7), height=1, bg="white", fg="black")
     botonCalcularRuta.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-
     botonConfirmarRuta = tk.Button(frameIzquierdo, text="Confirmar ruta", command=confirmarRuta, font=("Arial", 7), height=1, bg="white", fg="black")
     botonConfirmarRuta.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
@@ -311,11 +299,13 @@ def confirmarRuta():
  S: cambia el color del boton seleccionado
  R: el boton no debe ser de otro color que no sea blanco
 """
+
 def seleccionarBoton(a,b):
     boton1 = botones[a][b]
     if(boton1.cget("bg") == "black" or boton1.cget("bg") == "red" or boton1.cget("bg") == "green"):
         mb.showerror("Error", "Seleccione otro punto\nEl seleccionado ya está ocupado o es un obstáculo")
         return 0
+
     elif inicioSeleccionado[0] == -1 and inicioSeleccionado[1] == -1:
         boton1.config(bg="green")
         inicioSeleccionado[0] = a
@@ -326,6 +316,7 @@ def seleccionarBoton(a,b):
         destinoSeleccionado[0] = a
         destinoSeleccionado[1] = b
         bloquearMapa()
+
 
 #---------------FUNCIONES DE CREACION DE MAPA------------------
 # funcion para crear un mapa
@@ -339,7 +330,7 @@ def crearMapa():
     # limpiar botones  
     botones = []
     inicioSeleccionado[0] = inicioSeleccionado[1] = destinoSeleccionado[0] = destinoSeleccionado[1] = -1
-    
+
     labelFilas = tk.Label(frameIzquierdo, text="Filas: ", font=("Arial", 12))
     labelFilas.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     comboFilas = ttk.Combobox(frameIzquierdo, state="readonly", font=("Arial", 12), width=5)
@@ -406,7 +397,6 @@ def guardarMapa():
     if nuevoMapa == []:
         mb.showerror("Error", "Primero cree un mapa")
         return 0
-
     # guardar mapa en un string
     mapa = ""
     for fila in nuevoMapa:
@@ -414,6 +404,7 @@ def guardarMapa():
             mapa += boton.cget("text")+";"
         mapa = mapa[:-1]
         mapa += "\n"
+
     # quitar el ultimo salto de linea
     mapa = mapa[:-1]
     archivo = fd.asksaveasfile(title="Guardar mapa", mode="w", defaultextension=".csv", filetypes=[("Archivo CSV", "*.csv")])
@@ -423,7 +414,9 @@ def guardarMapa():
     archivo.close()
     mb.showinfo("Información", "Mapa guardado con éxito")
     cargarMapaInterfaz(archivo.name)
+
 #--------------FUNCIONES DE SELECCION DE RUTA------------------
+
 # habilita los botones del mapa para que se seleccione el inicio
 def seleccionarInicio():
     decolorar(0)
@@ -431,17 +424,63 @@ def seleccionarInicio():
     mb.showinfo("Información", "Seleccione el punto de inicio\n cuando se seleccione, se tornará verde")
     habilitarMapa()
 
+
 # habilita los botones del mapa para que se seleccione el destino
 def seleccionarDestino():
     if inicioSeleccionado[0] == -1 and inicioSeleccionado[1] == -1:
         mb.showerror("Error", "Seleccione el punto de inicio primero")
         return 0
-    
     decolorar(1)
     destinoSeleccionado[0] = destinoSeleccionado[1] = -1
     mb.showinfo("Información", "Seleccione el punto de destino\n cuando se seleccione, se tornará rojo")
     habilitarMapa()
+
 ##############################################################################################################
+
+"""
+Cuando  el  usuario  calcule  la  duración  de  su  trayecto  debe  tomar  en  cuenta  que  su  valor 
+puede variar según la hora del día en que realiza esta operación. A continuación, se muestra 
+los valores para cada uno de los elementos del mapa.
+"""
+def calcularRuta():
+    # L son calles donde su direccion de navegacion es de derecha a izquierda
+    # N son avenidas donde su direccion de navegacion es del sur al norte
+    # C son son las intersecciones de las calles y avenidas
+    # R son calles donde su direccion de navegacion es de izquierda a deecha
+    # S son avenidas donde su direccion de navegacion es del norte al sur
+    # ND son aquellas calles donde se puede navegar en ambas direcciones
+    # L y R calles, en horas pico 2, hora normal 2
+    # N y S avenidas, en horas pico 4, hora normal 1
+    # C cruces, en horas pico 3, hora normal 2
+    horasTotales = 0
+    horasPico = 0
+    filaActual = inicioSeleccionado[0]
+    columnaActual = inicioSeleccionado[1]
+    bucle = 0
+    movimientos = buscarCaminoCorto()
+    print(f"movimientos realizados{movimientos}")
+    for movimiento in movimientos:
+        # los movimientos son de la forma [fila, columna]
+        if mapa[movimiento[0]][movimiento[1]] == 'L' or movimiento[2] == 'R':
+            horasTotales += 2
+            horasPico += 2
+        elif mapa[movimiento[0]][movimiento[1]] == 'N' or movimiento[2] == 'S':
+            horasTotales += 1
+            horasPico += 4
+        elif mapa[movimiento[0]][movimiento[1]] == 'C':
+            horasTotales += 2
+            horasPico += 3
+        elif mapa[movimiento[0]][movimiento[1]] == 'ND':
+            horasTotales += 2
+            horasPico += 2
+    print(f"horas totales: {horasTotales}")
+    print(f"horas pico: {horasPico}")
+    # mensaje de la duracion aproximada del trayecto
+    mb.showinfo("Información", "La duración aproximada de su trayecto es de: " + str(horasTotales) + " horas")
+    #mensaje de la duracion aproximada del trayecto en horas pico
+    mb.showinfo("Información", "La duración aproximada de su trayecto en horas pico es de: " + str(horasPico) + " horas")
+    return horasTotales
+    
 """
 Cuando  el  usuario  calcule  la  duración  de  su  trayecto  debe  tomar  en  cuenta  que  su  valor 
 puede variar según la hora del día en que realiza esta operación. A continuación, se muestra 
@@ -462,27 +501,6 @@ def calcularRuta():
     filaActual = inicioSeleccionado[0]
     columnaActual = inicioSeleccionado[1]
     bucle = 0
-    movimientos = buscarCaminoCorto()
-    print(movimientos)
-    for movimiento in movimientos:
-        if movimiento[2] == 'L' or movimiento[2] == 'R':
-            horasTotales += 2
-            horasPico += 2
-        elif movimiento[2] == 'N' or movimiento[2] == 'S':
-            horasTotales += 1
-            horasPico += 4
-        elif movimiento[2] == 'C':
-            horasTotales += 2
-            horasPico += 3
-        elif movimiento[2] == 'ND':
-            horasTotales += 2
-            horasPico += 2
-    # mensaje de la duracion aproximada del trayecto
-    mb.showinfo("Información", "La duración aproximada de su trayecto es de: " + str(horasTotales) + " horas")
-    #mensaje de la duracion aproximada del trayecto en horas pico
-    mb.showinfo("Información", "La duración aproximada de su trayecto en horas pico es de: " + str(horasPico) + " horas")
-    return horasTotales
-    """
     while filaActual != destinoSeleccionado[0] or columnaActual != destinoSeleccionado[1]:
         posicion = mapa[filaActual][columnaActual]
         if bucle == 150:
@@ -493,125 +511,74 @@ def calcularRuta():
         if posicion == 'L':
             columnaActual -= 1
             horasTotales += 2
+            horasPico += 2
             bucle += 1
         elif posicion == 'N':
             filaActual -= 1
             horasTotales += 1
+            horasPico += 4
             bucle += 1
         elif posicion == 'C':
             accionElegida = seleccionarCamino(filaActual, columnaActual)
             if accionElegida == 1:
                 columnaActual -= 1
                 horasTotales += 2
+                horasPico += 2
                 bucle += 1
             elif accionElegida == 2:
                 filaActual -= 1
                 horasTotales += 2
+                horasPico += 2
                 bucle += 1
             elif accionElegida == 3:
                 columnaActual += 1
                 horasTotales += 2
+                horasPico += 2
                 bucle += 1
             elif accionElegida == 4:
                 filaActual += 1
                 horasTotales += 2
+                horasPico += 2
                 bucle += 1
         elif posicion == 'R':
             columnaActual += 1
             horasTotales += 2
+            horasPico += 2
             bucle += 1
         elif posicion == 'S':
             filaActual += 1
             horasTotales += 1
+            horasPico += 4
             bucle += 1
         elif posicion == 'ND':
             accionElegida = seleccionarCamino(filaActual, columnaActual)
             if accionElegida == 1:
                 columnaActual -= 1
                 horasTotales += 2
+                horasPico += 2
                 bucle += 1
             elif accionElegida == 2:
                 filaActual -= 1
                 horasTotales += 2
+                horasPico += 2
                 bucle += 1
             elif accionElegida == 3:
                 columnaActual += 1
                 horasTotales += 2
+                horasPico += 2
                 bucle += 1
             elif accionElegida == 4:
                 filaActual += 1
                 horasTotales += 2
+                horasPico += 2
                 bucle += 1
     
     print("El tiempo total de su trayecto es de:", horasTotales, "horas")
     # mensaje de informacion con el tiempo total
     mb.showinfo("Información", "El tiempo total de su trayecto es de: " + str(horasTotales) + " horas")
+    # mensaje de informacion con el tiempo total en horas pico
+    mb.showinfo("Información", "El tiempo total de su trayecto en horas pico es de: " + str(horasPico) + " horas")
     return horasTotales
-    """
-# buscar el camino mas corto
-def buscarCaminoCorto():
-    # Obtener las coordenadas del punto A y punto B en la matriz
-    fila_a = inicioSeleccionado[0]
-    columna_a = inicioSeleccionado[1]
-    fila_b = destinoSeleccionado[0]
-    columna_b = destinoSeleccionado[1]
-
-    # Verificar que los puntos estén dentro de los límites de la matriz
-    matriz = mapa
-    filas = contarFilas(matriz)
-    columnas = contarFilas(matriz[0])
-    visitado = [[False] * columnas for _ in range(filas)]
-    visitado[inicioSeleccionado[0]][inicioSeleccionado[1]] = True
-
-    cola = deque([(inicioSeleccionado[0], inicioSeleccionado[1], [])])
-    # cola = deque([(origen[0], origen[1])])
-
-    while cola:
-        fila, columna, camino = cola.popleft()
-
-        if (fila, columna) == destinoSeleccionado:
-            return camino + [(fila, columna)]
-
-        opciones = obtener_opciones(matriz, fila, columna)
-        for opcion in opciones:
-            nueva_fila, nueva_columna, direccion = opcion
-            if not visitado[nueva_fila][nueva_columna]:
-                visitado[nueva_fila][nueva_columna] = True
-                cola.append((nueva_fila, nueva_columna, camino + [(fila, columna, direccion)]))
-
-    # se retorna el camino mas corto
-    return camino
-
-def obtener_opciones(matriz, fila, columna):
-    opciones = []
-    direccion = matriz[fila][columna]
-
-    if direccion == 'N':
-        if fila > 0 and matriz[fila - 1][columna] != 0:
-            opciones.append((fila - 1, columna, direccion))
-    elif direccion == 'S':
-        if fila < len(matriz) - 1 and matriz[fila + 1][columna] != 0:
-            opciones.append((fila + 1, columna, direccion))
-    elif direccion == 'L':
-        if columna < len(matriz[0]) - 1 and matriz[fila][columna + 1] != 0:
-            opciones.append((fila, columna + 1, direccion))
-    elif direccion == 'R':
-        if columna > 0 and matriz[fila][columna - 1] != 0:
-            opciones.append((fila, columna - 1, direccion))
-    elif direccion == 'C':
-        if fila > 0 and matriz[fila - 1][columna] != 0:
-            opciones.append((fila - 1, columna, 'N'))
-        if fila < len(matriz) - 1 and matriz[fila + 1][columna] != 0:
-            opciones.append((fila + 1, columna, 'S'))
-        if columna < len(matriz[0]) - 1 and matriz[fila][columna + 1] != 0:
-            opciones.append((fila, columna + 1, 'L'))
-        if columna > 0 and matriz[fila][columna - 1] != 0:
-            opciones.append((fila, columna - 1, 'R'))
-
-    print(opciones)
-    return opciones
-
-
 # selecciona si debe ir por la derecha o izquierda, arriva o abajo
 def seleccionarCamino(filaActual, columnaActual):
     # 1 izquierda, 2 arriba, 3 derecha, 4 abajo
@@ -677,8 +644,6 @@ def cargarMapa(nombreMapa):
                 continue
             else:
                 fila += [letra]
-
-
     return mapa
 
 #funcion que retorna la cantidad de filas de un mapa
@@ -694,7 +659,7 @@ def totalColumnas(mapa):
     for columna in mapa[0]:
         columnaTotal += 1
     return columnaTotal
-#----------------------FIN DE LA SECCION DE LOGICA DEL PROGRAMA----------------------
 
+#----------------------FIN DE LA SECCION DE LOGICA DEL PROGRAMA----------------------
 #inicio del programa
 ventanaAutenticacion()

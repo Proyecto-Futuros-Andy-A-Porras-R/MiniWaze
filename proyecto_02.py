@@ -463,21 +463,24 @@ def calcularRuta():
     columnaActual = inicioSeleccionado[1]
     bucle = 0
     movimientos = buscarCaminoCorto()
+    print(movimientos)
     for movimiento in movimientos:
-        if movimiento == 'L' or movimiento == 'R':
+        if movimiento[2] == 'L' or movimiento[2] == 'R':
             horasTotales += 2
             horasPico += 2
-        elif movimiento == 'N' or movimiento == 'S':
+        elif movimiento[2] == 'N' or movimiento[2] == 'S':
             horasTotales += 1
             horasPico += 4
-        elif movimiento == 'C':
+        elif movimiento[2] == 'C':
             horasTotales += 2
             horasPico += 3
-        elif movimiento == 'ND':
+        elif movimiento[2] == 'ND':
             horasTotales += 2
             horasPico += 2
     # mensaje de la duracion aproximada del trayecto
     mb.showinfo("Información", "La duración aproximada de su trayecto es de: " + str(horasTotales) + " horas")
+    #mensaje de la duracion aproximada del trayecto en horas pico
+    mb.showinfo("Información", "La duración aproximada de su trayecto en horas pico es de: " + str(horasPico) + " horas")
     return horasTotales
     """
     while filaActual != destinoSeleccionado[0] or columnaActual != destinoSeleccionado[1]:
@@ -556,11 +559,12 @@ def buscarCaminoCorto():
     # Verificar que los puntos estén dentro de los límites de la matriz
     matriz = mapa
     filas = contarFilas(matriz)
-    columnas = contarFilas(mapa)(matriz[0])
+    columnas = contarFilas(matriz[0])
     visitado = [[False] * columnas for _ in range(filas)]
     visitado[inicioSeleccionado[0]][inicioSeleccionado[1]] = True
 
     cola = deque([(inicioSeleccionado[0], inicioSeleccionado[1], [])])
+    # cola = deque([(origen[0], origen[1])])
 
     while cola:
         fila, columna, camino = cola.popleft()
@@ -575,7 +579,8 @@ def buscarCaminoCorto():
                 visitado[nueva_fila][nueva_columna] = True
                 cola.append((nueva_fila, nueva_columna, camino + [(fila, columna, direccion)]))
 
-    return None
+    # se retorna el camino mas corto
+    return camino
 
 def obtener_opciones(matriz, fila, columna):
     opciones = []

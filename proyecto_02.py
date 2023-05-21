@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox as mb, filedialog as fd, ttk
 import csv
+from collections import deque
 global inicioSeleccionado
 inicioSeleccionado = [-1,-1]
 global destinoSeleccionado
@@ -546,66 +547,66 @@ def calcularRuta():
     """
 # buscar el camino mas corto
 def buscarCaminoCorto():
-    # L son calles donde su direccion de navegacion es de derecha a izquierda
-    # N son avenidas donde su direccion de navegacion es del sur al norte
-    # C son son las intersecciones de las calles y avenidas
-    # R son calles donde su direccion de navegacion es de izquierda a derecha
-    # S son avenidas donde su direccion de navegacion es del norte al sur
-    # ND son aquellas calles donde se puede navegar en ambas direcciones
+    # Obtener las coordenadas del punto A y punto B en la matriz
+    fila_a = inicioSeleccionado[0]
+    columna_a = inicioSeleccionado[1]
+    fila_b = destinoSeleccionado[0]
+    columna_b = destinoSeleccionado[1]
 
-    filaActual = inicioSeleccionado[0]
-    columnaActual = inicioSeleccionado[1]
-    bucle = 0
-    movimientos = []
-    while filaActual != destinoSeleccionado[0] or columnaActual != destinoSeleccionado[1]:
-        movimientos += [mapa[filaActual][columnaActual]]
-        if bucle == 150:
-            mb.showerror("Error", "No se pudo encontrar una ruta")
-            return 0
-        if filaActual == destinoSeleccionado[0] and columnaActual == destinoSeleccionado[1]:
-            break
-        if mapa[filaActual][columnaActual] == 'L':
-            columnaActual -= 1
-            bucle += 1
-        elif mapa[filaActual][columnaActual] == 'N':
-            filaActual -= 1
-            bucle += 1
-        elif mapa[filaActual][columnaActual] == 'C':
-            accionElegida = seleccionarCamino(filaActual, columnaActual)
-            if accionElegida == 1:
-                columnaActual -= 1
-                bucle += 1
-            elif accionElegida == 2:
-                filaActual -= 1
-                bucle += 1
-            elif accionElegida == 3:
-                columnaActual += 1
-                bucle += 1
-            elif accionElegida == 4:
-                filaActual += 1
-                bucle += 1
-        elif mapa[filaActual][columnaActual] == 'R':
-            columnaActual += 1
-            bucle += 1
-        elif mapa[filaActual][columnaActual] == 'S':
-            filaActual += 1
-            bucle += 1
-        elif mapa[filaActual][columnaActual] == 'ND':
-            accionElegida = seleccionarCamino(filaActual, columnaActual)
-            if accionElegida == 1:
-                columnaActual -= 1
-                bucle += 1
-            elif accionElegida == 2:
-                filaActual -= 1
-                bucle += 1
-            elif accionElegida == 3:
-                columnaActual += 1
-                bucle += 1
-            elif accionElegida == 4:
-                filaActual += 1
-                bucle += 1
-    return movimientos
-    
+    # Verificar que los puntos estén dentro de los límites de la matriz
+    matriz = mapa
+    filas = contarFilas(matriz)
+    columnas = contarFilas(mapa)(matriz[0])
+    visitado = [[False] * columnas for _ in range(filas)]
+    visitado[inicioSeleccionado[0]][inicioSeleccionado[1]] = True
+
+    cola = deque([(inicioSeleccionado[0], inicioSeleccionado[1], [])])
+
+    while cola:
+        fila, columna, camino = cola.popleft()
+
+        if (fila, columna) == destinoSeleccionado:
+            return camino + [(fila, columna)]
+
+        opciones = obtener_opciones(matriz, fila, columna)
+        for opcion in opciones:
+            nueva_fila, nueva_columna, direccion = opcion
+            if not visitado[nueva_fila][nueva_columna]:
+                visitado[nueva_fila][nueva_columna] = True
+                cola.append((nueva_fila, nueva_columna, camino + [(fila, columna, direccion)]))
+
+    return None
+
+def obtener_opciones(matriz, fila, columna):
+    opciones = []
+    direccion = matriz[fila][columna]
+
+    if direccion == 'N':
+        if fila > 0 and matriz[fila - 1][columna] != 0:
+            opciones.append((fila - 1, columna, direccion))
+    elif direccion == 'S':
+        if fila < len(matriz) - 1 and matriz[fila + 1][columna] != 0:
+            opciones.append((fila + 1, columna, direccion))
+    elif direccion == 'L':
+        if columna < len(matriz[0]) - 1 and matriz[fila][columna + 1] != 0:
+            opciones.append((fila, columna + 1, direccion))
+    elif direccion == 'R':
+        if columna > 0 and matriz[fila][columna - 1] != 0:
+            opciones.append((fila, columna - 1, direccion))
+    elif direccion == 'C':
+        if fila > 0 and matriz[fila - 1][columna] != 0:
+            opciones.append((fila - 1, columna, 'N'))
+        if fila < len(matriz) - 1 and matriz[fila + 1][columna] != 0:
+            opciones.append((fila + 1, columna, 'S'))
+        if columna < len(matriz[0]) - 1 and matriz[fila][columna + 1] != 0:
+            opciones.append((fila, columna + 1, 'L'))
+        if columna > 0 and matriz[fila][columna - 1] != 0:
+            opciones.append((fila, columna - 1, 'R'))
+
+    print(opciones)
+    return opciones
+
+
 # selecciona si debe ir por la derecha o izquierda, arriva o abajo
 def seleccionarCamino(filaActual, columnaActual):
     # 1 izquierda, 2 arriba, 3 derecha, 4 abajo

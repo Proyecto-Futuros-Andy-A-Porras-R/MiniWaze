@@ -201,7 +201,7 @@ def guardarDestino():
     else:
         # se agrega el destino a la lista de destinos
         global destinos
-        destinos += [nombreMapaSeleccionado,inicioSeleccionado, destinoSeleccionado]
+        destinos += [nombreMapaSeleccionado,destinoSeleccionado[0],destinoSeleccionado[1]]
         mb.showinfo("Información", "Destino guardado con éxito")
 
 
@@ -457,9 +457,28 @@ def calcularRuta():
     # N y S avenidas, en horas pico 4, hora normal 1
     # C cruces, en horas pico 3, hora normal 2
     horasTotales = 0
+    horasPico = 0
     filaActual = inicioSeleccionado[0]
     columnaActual = inicioSeleccionado[1]
     bucle = 0
+    movimientos = buscarCaminoCorto()
+    for movimiento in movimientos:
+        if movimiento == 'L' or movimiento == 'R':
+            horasTotales += 2
+            horasPico += 2
+        elif movimiento == 'N' or movimiento == 'S':
+            horasTotales += 1
+            horasPico += 4
+        elif movimiento == 'C':
+            horasTotales += 2
+            horasPico += 3
+        elif movimiento == 'ND':
+            horasTotales += 2
+            horasPico += 2
+    # mensaje de la duracion aproximada del trayecto
+    mb.showinfo("Información", "La duración aproximada de su trayecto es de: " + str(horasTotales) + " horas")
+    return horasTotales
+    """
     while filaActual != destinoSeleccionado[0] or columnaActual != destinoSeleccionado[1]:
         posicion = mapa[filaActual][columnaActual]
         if bucle == 150:
@@ -524,6 +543,69 @@ def calcularRuta():
     # mensaje de informacion con el tiempo total
     mb.showinfo("Información", "El tiempo total de su trayecto es de: " + str(horasTotales) + " horas")
     return horasTotales
+    """
+# buscar el camino mas corto
+def buscarCaminoCorto():
+    # L son calles donde su direccion de navegacion es de derecha a izquierda
+    # N son avenidas donde su direccion de navegacion es del sur al norte
+    # C son son las intersecciones de las calles y avenidas
+    # R son calles donde su direccion de navegacion es de izquierda a derecha
+    # S son avenidas donde su direccion de navegacion es del norte al sur
+    # ND son aquellas calles donde se puede navegar en ambas direcciones
+
+    filaActual = inicioSeleccionado[0]
+    columnaActual = inicioSeleccionado[1]
+    bucle = 0
+    movimientos = []
+    while filaActual != destinoSeleccionado[0] or columnaActual != destinoSeleccionado[1]:
+        movimientos += [mapa[filaActual][columnaActual]]
+        if bucle == 150:
+            mb.showerror("Error", "No se pudo encontrar una ruta")
+            return 0
+        if filaActual == destinoSeleccionado[0] and columnaActual == destinoSeleccionado[1]:
+            break
+        if mapa[filaActual][columnaActual] == 'L':
+            columnaActual -= 1
+            bucle += 1
+        elif mapa[filaActual][columnaActual] == 'N':
+            filaActual -= 1
+            bucle += 1
+        elif mapa[filaActual][columnaActual] == 'C':
+            accionElegida = seleccionarCamino(filaActual, columnaActual)
+            if accionElegida == 1:
+                columnaActual -= 1
+                bucle += 1
+            elif accionElegida == 2:
+                filaActual -= 1
+                bucle += 1
+            elif accionElegida == 3:
+                columnaActual += 1
+                bucle += 1
+            elif accionElegida == 4:
+                filaActual += 1
+                bucle += 1
+        elif mapa[filaActual][columnaActual] == 'R':
+            columnaActual += 1
+            bucle += 1
+        elif mapa[filaActual][columnaActual] == 'S':
+            filaActual += 1
+            bucle += 1
+        elif mapa[filaActual][columnaActual] == 'ND':
+            accionElegida = seleccionarCamino(filaActual, columnaActual)
+            if accionElegida == 1:
+                columnaActual -= 1
+                bucle += 1
+            elif accionElegida == 2:
+                filaActual -= 1
+                bucle += 1
+            elif accionElegida == 3:
+                columnaActual += 1
+                bucle += 1
+            elif accionElegida == 4:
+                filaActual += 1
+                bucle += 1
+    return movimientos
+    
 # selecciona si debe ir por la derecha o izquierda, arriva o abajo
 def seleccionarCamino(filaActual, columnaActual):
     # 1 izquierda, 2 arriba, 3 derecha, 4 abajo

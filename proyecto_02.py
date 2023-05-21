@@ -194,8 +194,22 @@ def guardarDestino():
     else:
         # se agrega el destino a la lista de destinos
         global destinos
-        destinos += [nombreMapaSeleccionado,destinoSeleccionado[0],destinoSeleccionado[1]]
+        # nombreMapa = sacarNombreMapa()
+        destinos += [inicioSeleccionado,destinoSeleccionado]
+        # se guarda el destino en un archivo
+        guardarDestinoArchivo(inicioSeleccionado,destinoSeleccionado)
         mb.showinfo("Información", "Destino guardado con éxito")
+
+# def sacarNombreMapa():
+
+
+def guardarDestinoArchivo(inicio, destino):
+    datos = str(inicio[0]) + "," + str(inicio[1]) + "," + str(destino[0]) + "," + str(destino[1])+ "\n"
+    # se abre el archivo en modo append para agregar el destino al final
+    # si el archivo no existe, se crea
+    archivo = open("destinos.txt", "a")
+    archivo.write(datos)
+    archivo.close()
 
 
 #quita las opciones del menu

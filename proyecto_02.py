@@ -133,8 +133,7 @@ def ventanaPrincipal():
     labelInicial2 = tk.Label(frameIzquierdo, text="por favor cargue un archivo o cree un mapa para continuar", font=("Helvetica", 16, "bold"), bg="white")
     labelInicial.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     labelInicial2.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    labelFondo = tk.Label(frameDerecho, bg="#008CBA")
-    labelFondo.place(x=0, y=0, relwidth=1, relheight=1)
+
 
     #frame derecho para el mapa
     global frameDerecho
@@ -446,15 +445,16 @@ def calcularRuta():
     filaActual = inicioSeleccionado[0]
     columnaActual = inicioSeleccionado[1]
     while filaActual != destinoSeleccionado[0] or columnaActual != destinoSeleccionado[1]:
+        posicion = mapa[filaActual][columnaActual]
         if filaActual == destinoSeleccionado[0] and columnaActual == destinoSeleccionado[1]:
             break
-        if mapa[filaActual][columnaActual] == 'L':
+        if posicion == 'L':
             columnaActual -= 1
             horasTotales += 2
-        elif mapa[filaActual][columnaActual] == 'N':
+        elif posicion == 'N':
             filaActual -= 1
-            horasTotales += 4
-        elif mapa[filaActual][columnaActual] == 'C':
+            horasTotales += 1
+        elif posicion == 'C':
             accionElegida = seleccionarCamino(filaActual, columnaActual)
             if accionElegida == 1:
                 columnaActual -= 1
@@ -468,13 +468,13 @@ def calcularRuta():
             elif accionElegida == 4:
                 filaActual += 1
                 horasTotales += 2
-        elif mapa[filaActual][columnaActual] == 'R':
+        elif posicion == 'R':
             columnaActual += 1
             horasTotales += 2
-        elif mapa[filaActual][columnaActual] == 'S':
+        elif posicion == 'S':
             filaActual += 1
-            horasTotales += 4
-        elif mapa[filaActual][columnaActual] == 'ND':
+            horasTotales += 1
+        elif posicion == 'ND':
             accionElegida = seleccionarCamino(filaActual, columnaActual)
             if accionElegida == 1:
                 columnaActual -= 1
@@ -492,58 +492,28 @@ def calcularRuta():
     return horasTotales
 # selecciona si debe ir por la derecha o izquierda, arriva o abajo
 def seleccionarCamino(filaActual, columnaActual):
-    # se usa la variable global mapa
-    # se usa la variable global destinoSeleccionado
-    # para saber si el destino esta a la derecha o izquierda
-    if destinoSeleccionado[1] > columnaActual:
-        # si el destino esta a la derecha
-        # se debe ir por la derecha
-        # se valida que no se salga del mapa y que no se choque con un edificio
-        if columnaActual + 1 < totalColumnas(mapa) and mapa[filaActual][columnaActual + 1] != '0':
-            return 1
-        # si no se puede ir por la derecha se va por la izquierda
-        elif columnaActual - 1 >= 0 and mapa[filaActual][columnaActual - 1] != '0':
-            return 3
-        # si no se puede ir por la derecha ni por la izquierda se va por arriba
-        elif filaActual - 1 >= 0 and mapa[filaActual - 1][columnaActual] != '0':
+    # 1 izquierda, 2 arriba, 3 derecha, 4 abajo
+    if columnaActual > destinoSeleccionado[1]:
+        if filaActual > destinoSeleccionado[0]:
             return 2
-        # si no se puede ir por la derecha ni por la izquierda ni por arriba se va por abajo
-        elif filaActual + 1 < contarFilas(mapa) and mapa[filaActual + 1][columnaActual] != '0':
+        elif filaActual < destinoSeleccionado[0]:
             return 4
-    elif destinoSeleccionado[1] < columnaActual:
-        if columnaActual - 1 >= 0 and mapa[filaActual][columnaActual - 1] != '0':
-            return 3
-        elif columnaActual + 1 < totalColumnas(mapa) and mapa[filaActual][columnaActual + 1] != '0':
+        else:
             return 1
-        elif filaActual - 1 >= 0 and mapa[filaActual - 1][columnaActual] != '0':
+    elif columnaActual < destinoSeleccionado[1]:
+        if filaActual > destinoSeleccionado[0]:
             return 2
-        elif filaActual + 1 < contarFilas(mapa) and mapa[filaActual + 1][columnaActual] != '0':
+        elif filaActual < destinoSeleccionado[0]:
             return 4
-    # para saber si el destino esta arriba o abajo
-    elif destinoSeleccionado[0] > filaActual:
-        # si el destino esta abajo
-        # se debe ir por abajo
-        # se valida que no se salga del mapa y que no se choque con un edificio
-        if filaActual + 1 < contarFilas(mapa) and mapa[filaActual + 1][columnaActual] != '0':
-            return 4
-        # si no se puede ir por abajo se va por arriba
-        elif filaActual - 1 >= 0 and mapa[filaActual - 1][columnaActual] != '0':
-            return 2
-        # si no se puede ir por abajo ni por arriba se va por la derecha
-        elif columnaActual + 1 < totalColumnas(mapa) and mapa[filaActual][columnaActual + 1] != '0':
-            return 1
-        # si no se puede ir por abajo ni por arriba ni por la derecha se va por la izquierda
-        elif columnaActual - 1 >= 0 and mapa[filaActual][columnaActual - 1] != '0':
+        else:
             return 3
-    elif destinoSeleccionado[0] < filaActual:
-        if filaActual - 1 >= 0 and mapa[filaActual - 1][columnaActual] != '0':
+    else:
+        if filaActual > destinoSeleccionado[0]:
             return 2
-        elif filaActual + 1 < contarFilas(mapa) and mapa[filaActual + 1][columnaActual] != '0':
+        elif filaActual < destinoSeleccionado[0]:
             return 4
-        elif columnaActual + 1 < totalColumnas(mapa) and mapa[filaActual][columnaActual + 1] != '0':
-            return 1
-        elif columnaActual - 1 >= 0 and mapa[filaActual][columnaActual - 1] != '0':
-            return 3
+        else:
+            return 0
 ##############################################################################################################
 
 #**********************SECCION DE LOGICA DEL PROGRAMA***********************

@@ -7,6 +7,8 @@ global destinoSeleccionado
 destinoSeleccionado = [-1,-1]
 global nuevoMapa
 nuevoMapa = []
+global destinos 
+destinos = []
         
 #--------------------VENTANA AUTENTICACION---------------------
 def ventanaAutenticacion():
@@ -171,12 +173,12 @@ def mostrarOpciones():
     botonPlanificarDestino.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
     botonesPrincipales.append(botonPlanificarDestino)
     #guardar destino
-    botonGuardarDestino = tk.Button(frameIzquierdo, text="Guardar destino", font=("Helvetica", 10, "bold"))#, command=lambda: cargarVentanaAnterior(ventanaPrincipal, ventanaGuardarDestino))
+    botonGuardarDestino = tk.Button(frameIzquierdo, text="Guardar destino", font=("Helvetica", 10, "bold"), command=lambda: guardarDestino())#, command=lambda: cargarVentanaAnterior(ventanaPrincipal, ventanaGuardarDestino))
     botonGuardarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonGuardarDestino.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
     botonesPrincipales.append(botonGuardarDestino)
     #borrar destino
-    botonBorrarDestino = tk.Button(frameIzquierdo, text="Borrar destino", font=("Helvetica", 10, "bold"))#, command=lambda: cargarVentanaAnterior(ventanaPrincipal, ventanaBorrarDestino))
+    botonBorrarDestino = tk.Button(frameIzquierdo, text="Borrar destino", font=("Helvetica", 10, "bold"))#, command=lambda: borrarDestino())#, command=lambda: cargarVentanaAnterior(ventanaPrincipal, ventanaBorrarDestino))
     botonBorrarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonBorrarDestino.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
     botonesPrincipales.append(botonBorrarDestino)
@@ -189,6 +191,19 @@ def mostrarOpciones():
     botonSalir = tk.Button(frameIzquierdo, text="Salir", font=("Helvetica", 10, "bold"), command=lambda: ventanaPrincipal.destroy())
     botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonSalir.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
+
+
+# funcion para guardar el destino seleccionado
+def guardarDestino():
+    # si no se ha seleccionado un destino
+    if inicioSeleccionado == [-1,-1] or destinoSeleccionado == [-1,-1]:
+        mb.showerror("Error", "No se ha seleccionado un destino")
+    else:
+        # se agrega el destino a la lista de destinos
+        global destinos
+        destinos += [nombreMapaSeleccionado,inicioSeleccionado, destinoSeleccionado]
+        mb.showinfo("Información", "Destino guardado con éxito")
+
 
 #quita las opciones del menu
 def quitarOpciones():
@@ -556,6 +571,9 @@ def contarLetras(texto):
 
 #lectura de archivo csv
 def cargarMapa(nombreMapa):
+    # guardo el nombre del mapa
+    global nombreMapaSeleccionado
+    nombreMapaSeleccionado = nombreMapa
     archivo = open(nombreMapa)
     datos = archivo.readlines()
     mapa = []

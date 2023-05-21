@@ -489,6 +489,8 @@ def calcularRuta():
                 filaActual += 1
                 horasTotales += 2
     print("El tiempo total de su trayecto es de:", horasTotales, "horas")
+    # mensaje de informacion con el tiempo total
+    mb.showinfo("Información", "El tiempo total de su trayecto es de: " + str(horasTotales) + " horas")
     return horasTotales
 # selecciona si debe ir por la derecha o izquierda, arriva o abajo
 def seleccionarCamino(filaActual, columnaActual):

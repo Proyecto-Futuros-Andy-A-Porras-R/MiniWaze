@@ -11,6 +11,8 @@ global nuevoMapa
 nuevoMapa = []
 global rutas
 rutas = []
+global nombreMapaActual
+nombreMapaActual = ""
 #--------------------VENTANA AUTENTICACION---------------------
 #ventana principal del programa
 def ventanaAutenticacion():
@@ -331,6 +333,8 @@ def cargarMapaInterfaz(archivo):
     bloquearMapa()
     #mostrar nombre del mapa en la parte inferior
     nombre = archivo[pos(archivo, '/')+1:pos(archivo, '.')]
+    global nombreMapaActual
+    nombreMapaActual = nombre
     labelNombreMapa = tk.Label(frameDerecho, text=nombre, font=("Arial", 12, "bold"))
     labelNombreMapa.grid(row=filaTotal+1, column=0, columnspan=columnaTotal)
 
@@ -531,6 +535,7 @@ def borrarArchivo(destino, nombre):
     mostrarOpciones()
 
 def planificarDestino():
+    cargarDestinos(nombreMapaActual)
     if (contarFilas(rutas))==0:
         mb.showerror("Error", "No hay destinos registrados")
         return 0
@@ -550,7 +555,7 @@ def planificarDestino():
             widget.config(bg="white", fg="black")
     
     #sacar la informacion del archivo txt con el camino
-    cargarDestinos(nombre)
+    # cargarDestinos(nombre)
     #crear un combobox con los destinos
     labelDestino = tk.Label(frameIzquierdo, text="Destino: ", font=("Arial", 12))
     labelDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
@@ -573,15 +578,91 @@ def planificarDestino():
     entryHoraSalida.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     
     #boton para calcular la hora de llegada
-    botonCalcularHoraLlegada = tk.Button(frameIzquierdo, text="Calcular hora de llegada", command=lambda: calcularHoraLlegada(rutas[comboDestino.current()]), font=("Arial", 12), height=1, bg="white", fg="black")
+    botonCalcularHoraLlegada = tk.Button(frameIzquierdo, text="Calcular hora de llegada", command=lambda: calcularHoraLlegada(rutas[comboDestino.current()],entryHoraSalida.get()), font=("Arial", 12), height=1, bg="white", fg="black")
     botonCalcularHoraLlegada.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
     #boton para volver a la pantalla de opciones
     botonVolver = tk.Button(frameIzquierdo, text="Volver", command=mostrarOpciones, font=("Arial", 12), height=1, bg="white", fg="black")
     botonVolver.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
-def calcularHoraLlegada(ruta):
-    pass
+# funcion que calcula la hora de llegada
+# segun la ruta y la hora de salida
+# retriccion: la hora de salida debe ser en formato hh:mm
+# R: si la hora de salida no es valida, muestra un error diciendo que la hora de salida no es valida
+def calcularHoraLlegada(ruta, horaSalida):
+    # validar que la hora de salida sea valida
+    if validarHora(horaSalida) == False:
+        mb.showerror("Error", "La hora de salida no es valida")
+        return 0
+    # obtener la hora de salida
+    hora = int(horaSalida[:2])
+    minutos = int(horaSalida[3:])
+    # obtener la duracion de la ruta
+    duracion, duracionPico = calcularDuracion(ruta)
+    # sumar la duracion a los minutos
+    duracion = calculoHora(hora, minutos+duracion)
+    duracionPico = calculoHora(hora, minutos+duracionPico)
+    # mostrar la hora de llegada
+    mb.showinfo("Hora de llegada", "Hora de llegada: "+duracion+"\nHora de llegada en hora pico: "+duracionPico)
+
+# funcion para que la hora tenga el formato hh:mm
+# restriccion: la hora debe ser un numero entero
+# R: retorna la hora con el formato hh:mm
+def calculoHora(hora, minutos):
+    if minutos >= 60:
+        hora += 1
+        minutos -= 60
+    if hora >= 24:
+        hora -= 24
+    if hora < 10:
+        hora = "0"+str(hora)
+    if minutos < 10:
+        minutos = "0"+str(minutos)
+    return str(hora)+":"+str(minutos)
+# funcion que calcula la duracion de una ruta
+# restriccion: la ruta debe ser una lista de listas
+# R: retorna la duracion de la ruta
+def calcularDuracion(ruta):
+    tiempo = 0
+    tiempoPico = 0
+    for movimiento in ruta[:-2]:
+        print(movimiento, mapa[movimiento[0]][movimiento[1]])
+        if mapa[movimiento[0]][movimiento[1]] == "C":
+            tiempo += 2
+            tiempoPico += 3
+        elif mapa[movimiento[0]][movimiento[1]] == "N" or mapa[movimiento[0]][movimiento[1]] == "S":
+            tiempo += 1
+            tiempoPico += 4
+        elif mapa[movimiento[0]][movimiento[1]] == "R" or mapa[movimiento[0]][movimiento[1]] == "L":
+            tiempo += 2
+            tiempoPico += 2
+    return tiempo, tiempoPico
+
+
+# funcion que valida que la hora sea valida
+# restriccion: la hora debe ser en formato hh:mm    
+# R: si la hora es valida retorna True, si no retorna False
+def validarHora(hora):
+    # validar que la hora sea en formato hh:mm
+    if contarCaracteres(hora) == 5:
+        for i in range(5):
+            if i == 2:
+                if hora[i] != ":":
+                    return False
+            else:
+                for j in range(10):
+                    if hora[i] == str(j):
+                        break
+                    elif j > 2 and i == 0:
+                        return False
+                    elif j > 5 and i == 3:
+                        return False
+    else:
+        return False
+    return True
+
+
+
 #**********************SECCION DE LOGICA DEL PROGRAMA***********************
 #guarda el mapa creado en un archivo csv
 #R: si no hay nada para guardar, retorna 0 y un error diciendo que no hay nada para guardar
@@ -606,7 +687,9 @@ def guardarMapa():
     archivo.write(mapa)
     archivo.close()
     mb.showinfo("Información", "Mapa guardado con éxito")
+    nombreMapaActual = archivo.name
     cargarMapaInterfaz(archivo.name)
+    cargarDestinos(nombreMapaActual)
 
 #funcion para guardar el trayecto de destino en un archivo txt
 def guardarDestino():
@@ -662,7 +745,7 @@ def cargarDestinos(nombre):
         rutas += [contenido]
         i += 1 
 
-# muestra el recorrido en el mapa
+# muestra el recorrido en el mapa, y las horas pico
 def pintarTrayecto(contenido):
     # decolorar el mapa
     for widget in frameDerecho.winfo_children():
@@ -684,6 +767,12 @@ def pintarTrayecto(contenido):
         frameDerecho.update()
         time.sleep(0.1)
     
+    horas = contenido[-1] # las horas estan en la ultima posicion
+    #mostrar en la interfaz
+    labelHoras = tk.Label(frameDerecho, text="Duracion en tiempo normal: "+str(horas[0])+" minutos", font=("Arial", 12), bg="white", fg="black")
+    labelHoras.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    labelHorasPico = tk.Label(frameDerecho, text="Duracion en hora pico: "+str(horas[1])+" minutos", font=("Arial", 12), bg="white", fg="black")
+    labelHorasPico.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 #--------------FUNCIONES DE SELECCION DE RUTA------------------
 # habilita los botones del mapa para que se seleccione el inicio
 def seleccionarInicio():
@@ -837,16 +926,16 @@ def calcularRuta():
                 matrizCamino[filaActual][columnaActual] = 1
                 camino += [[filaActual, columnaActual]]
                 filaActual -= 1
-                horasTotales += 1
-                horasPico += 4
+                horasTotales += 2
+                horasPico += 3
                 bucle += 1
             elif (irPor == 2):    
                 #va hacia abajo
                 matrizCamino[filaActual][columnaActual] = 1
                 camino += [[filaActual, columnaActual]]
                 filaActual += 1
-                horasTotales += 1
-                horasPico += 4
+                horasTotales += 2
+                horasPico += 3
                 bucle += 1
             elif (irPor == 3):
                 #va hacia la derecha
@@ -854,7 +943,7 @@ def calcularRuta():
                 camino += [[filaActual, columnaActual]]
                 columnaActual += 1
                 horasTotales += 2
-                horasPico += 2
+                horasPico += 3
                 bucle += 1
             elif (irPor == 4):
                 #va hacia la izquierda
@@ -862,7 +951,7 @@ def calcularRuta():
                 camino += [[filaActual, columnaActual]]
                 columnaActual -= 1
                 horasTotales += 2
-                horasPico += 2
+                horasPico += 3
                 bucle += 1
             else:
                 bucle = contarFilas(mapa)*totalColumnas(mapa)
@@ -1054,6 +1143,12 @@ def totalColumnas(mapa):
     for columna in mapa[0]:
         columnaTotal += 1
     return columnaTotal
+# funcion que retorna la cantidad de carateres de un string
+def contarCaracteres(string):
+    contador = 0
+    for caracter in string:
+        contador += 1
+    return contador
 #----------------------FIN DE LA SECCION DE LOGICA DEL PROGRAMA----------------------
 #inicio del programa
 ventanaAutenticacion()

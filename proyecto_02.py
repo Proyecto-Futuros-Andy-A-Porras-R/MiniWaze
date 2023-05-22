@@ -201,6 +201,15 @@ def modificarMapa():
     botones = []
     # limpiar variables globales
     inicioSeleccionado[0] = inicioSeleccionado[1] = destinoSeleccionado[0] = destinoSeleccionado[1] = -1
+    # boton para guardar el mapa
+    botonGuardarMapa = tk.Button(frameIzquierdo, text="Guardar mapa", font=("Helvetica", 10, "bold"), command=lambda: guardarMapa())
+    botonGuardarMapa.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    botonGuardarMapa.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
+    # botones.append(botonGuardarMapa)
+    # para salir de la modificacion del mapa
+    botonSalir = tk.Button(frameIzquierdo, text="Salir", font=("Helvetica", 10, "bold"), command=lambda: mostrarOpciones())
+    botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    botonSalir.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
     # llamamos a la funcion dibujarMapaExistente, para que dibuje el mapa que ya se cargo
     # pero con los botones habilitados para modificarlo, como si fuera un mapa nuevo
     dibujarMapaExistente()
@@ -218,16 +227,36 @@ def dibujarMapaExistente():
             # saco el valor actual de la posicion actual
             valor = mapaCopia[fila][columna]
             # si es un 0 lo que hay en la posicion actual, se muestra el boton negro
-            if mapaCopia[fila][columna] == "0":
-                boton = tk.Button(frameDerecho, text=valor,font=("Arial",12), width=1, height=1, bg="black", fg="white", command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
+            if valor == "0":
+                boton = tk.Button(frameDerecho, text="0",font=("Arial",12), width=1, height=1, bg="black", fg="white", command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
                 boton.grid(row=fila,column=columna)
                 filas.append(boton)
             # en cualquier otro caso se muestra la letra
-            else:
-                boton = tk.Button(frameDerecho, text=valor, font=("Arial",12), width=1, height=1, bg="black", fg="white", command=lambda fila=fila, columna= columna: cambiarColor(fila, columna))
+            elif valor == "N":
+                boton = tk.Button(frameDerecho, text="N",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
                 boton.grid(row=fila,column=columna)
-                filas += boton 
-            nuevoMapa += filas
+                filas.append(boton)
+            elif valor == "R":
+                boton = tk.Button(frameDerecho, text="R",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
+                boton.grid(row=fila,column=columna)
+                filas.append(boton)
+            elif valor == "L":
+                boton = tk.Button(frameDerecho, text="L",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
+                boton.grid(row=fila,column=columna)
+                filas.append(boton)
+            elif valor == "S":
+                boton = tk.Button(frameDerecho, text="S",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
+                boton.grid(row=fila,column=columna)
+                filas.append(boton)
+            elif valor == "C":
+                boton = tk.Button(frameDerecho, text="C",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
+                boton.grid(row=fila,column=columna)
+                filas.append(boton)
+            elif valor == "ND":
+                boton = tk.Button(frameDerecho, text="ND",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
+                boton.grid(row=fila,column=columna)
+                filas.append(boton)
+        nuevoMapa.append(filas)
 
 # funcion para guardar el destino seleccionado
 def guardarDestino():

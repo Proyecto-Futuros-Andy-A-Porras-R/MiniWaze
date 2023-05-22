@@ -493,51 +493,6 @@ def seleccionarDestino():
     habilitarMapa()
 
 ##############################################################################################################
-
-"""
-Cuando  el  usuario  calcule  la  duración  de  su  trayecto  debe  tomar  en  cuenta  que  su  valor 
-puede variar según la hora del día en que realiza esta operación. A continuación, se muestra 
-los valores para cada uno de los elementos del mapa.
-"""
-def calcularRuta():
-    # L son calles donde su direccion de navegacion es de derecha a izquierda
-    # N son avenidas donde su direccion de navegacion es del sur al norte
-    # C son son las intersecciones de las calles y avenidas
-    # R son calles donde su direccion de navegacion es de izquierda a deecha
-    # S son avenidas donde su direccion de navegacion es del norte al sur
-    # ND son aquellas calles donde se puede navegar en ambas direcciones
-    # L y R calles, en horas pico 2, hora normal 2
-    # N y S avenidas, en horas pico 4, hora normal 1
-    # C cruces, en horas pico 3, hora normal 2
-    horasTotales = 0
-    horasPico = 0
-    filaActual = inicioSeleccionado[0]
-    columnaActual = inicioSeleccionado[1]
-    bucle = 0
-    movimientos = buscarCaminoCorto()
-    print(f"movimientos realizados{movimientos}")
-    for movimiento in movimientos:
-        # los movimientos son de la forma [fila, columna]
-        if mapa[movimiento[0]][movimiento[1]] == 'L' or movimiento[2] == 'R':
-            horasTotales += 2
-            horasPico += 2
-        elif mapa[movimiento[0]][movimiento[1]] == 'N' or movimiento[2] == 'S':
-            horasTotales += 1
-            horasPico += 4
-        elif mapa[movimiento[0]][movimiento[1]] == 'C':
-            horasTotales += 2
-            horasPico += 3
-        elif mapa[movimiento[0]][movimiento[1]] == 'ND':
-            horasTotales += 2
-            horasPico += 2
-    print(f"horas totales: {horasTotales}")
-    print(f"horas pico: {horasPico}")
-    # mensaje de la duracion aproximada del trayecto
-    mb.showinfo("Información", "La duración aproximada de su trayecto es de: " + str(horasTotales) + " horas")
-    #mensaje de la duracion aproximada del trayecto en horas pico
-    mb.showinfo("Información", "La duración aproximada de su trayecto en horas pico es de: " + str(horasPico) + " horas")
-    return horasTotales
-    
 """
 Cuando  el  usuario  calcule  la  duración  de  su  trayecto  debe  tomar  en  cuenta  que  su  valor 
 puede variar según la hora del día en que realiza esta operación. A continuación, se muestra 

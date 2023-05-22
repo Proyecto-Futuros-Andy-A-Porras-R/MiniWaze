@@ -1,17 +1,18 @@
 import tkinter as tk
 from tkinter import messagebox as mb, filedialog as fd, ttk
 import csv
-from collections import deque
+import time
+    
 global inicioSeleccionado
 inicioSeleccionado = [-1,-1]
 global destinoSeleccionado
 destinoSeleccionado = [-1,-1]
 global nuevoMapa
 nuevoMapa = []
-global destinos 
-destinos = []
-
+global rutas
+rutas = []
 #--------------------VENTANA AUTENTICACION---------------------
+#ventana principal del programa
 def ventanaAutenticacion():
     global ventanaAutenticacion
     ventanaAutenticacion = tk.Tk()
@@ -56,7 +57,7 @@ def ventanaAutenticacion():
     botonSalir.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
     ventanaAutenticacion.mainloop()
 
-
+# seccion de registro de usuario
 def registrarse(labelNoCuenta, botonIngresar, botonRegistrarse, entryUsuario, entryContrasena):
     # limpia los entrys
     entryUsuario.delete(0, tk.END)
@@ -67,6 +68,7 @@ def registrarse(labelNoCuenta, botonIngresar, botonRegistrarse, entryUsuario, en
     # cambia la funcion del boton de registrarse
     botonRegistrarse.config(text="Registrarse", command=lambda: registrarUsuarioInterfaz(entryUsuario.get(), entryContrasena.get()))
 
+# funcion para registrar usuario
 def registrarUsuarioInterfaz(usuario, contrasena):
     datos = "\n" + usuario + ";" + contrasena
     archivo = open("usuarios.txt", "r")
@@ -82,6 +84,7 @@ def registrarUsuarioInterfaz(usuario, contrasena):
         ventanaAutenticacion.destroy()
         ventanaPrincipal()
 
+# valida que el usuario y la contraseña sean correctos
 def validarUsuarioInterfaz(usuario, contrasena):
     if validarUsuario(usuario, contrasena):
         ventanaAutenticacion.destroy()
@@ -93,6 +96,7 @@ def validarUsuarioInterfaz(usuario, contrasena):
         return 0
 
 #-------------------VENTANA PRINCIPAL-------------------
+#despliega la ventana principal
 def ventanaPrincipal():
     global ventanaPrincipal
     ventanaPrincipal = tk.Tk()
@@ -139,6 +143,7 @@ def ventanaPrincipal():
     labelFondo.place(x=0, y=0, relwidth=1, relheight=1)
     ventanaPrincipal.mainloop()
 
+#uso de filedialog para cargar el mapa
 def cargarArchivo():
     #solo acepta archivos csv
     archivo = fd.askopenfilename(
@@ -148,46 +153,53 @@ def cargarArchivo():
     if archivo != "":
         cargarMapaInterfaz(archivo)
 
-
 #-----------------FUNCIONES PARA WIDGETS-----------------
 #despliega las opciones del menu
 def mostrarOpciones():
+    global botonesPrincipales
     #limpia el frame izquierdo
     for widget in frameIzquierdo.winfo_children():
         widget.destroy()    
+
+    #limpia el frame derecho
+    for widget in frameDerecho.winfo_children():
+        if widget.cget("bg") == "red" or widget.cget("bg") == "green" or widget.cget("bg") == "purple":
+            widget.config(bg="white", fg="black")
+            
     #seleccionar destino
     botonSeleccionarDestino = tk.Button(frameIzquierdo, text="Seleccionar destino", font=("Helvetica", 10, "bold"), command=lambda: seleccionarRuta())
     botonSeleccionarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonSeleccionarDestino.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
-    botonesPrincipales.append(botonSeleccionarDestino)
+    botonesPrincipales += [botonSeleccionarDestino]
     #planificar destino
-    botonPlanificarDestino = tk.Button(frameIzquierdo, text="Planificar destino", font=("Helvetica", 10, "bold"))#, command=lambda: cargarVentanaAnterior(ventanaPrincipal, ventanaPlanificarDestino))
+    botonPlanificarDestino = tk.Button(frameIzquierdo, text="Planificar destino", font=("Helvetica", 10, "bold"), command=lambda: planificarDestino())
     botonPlanificarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonPlanificarDestino.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
-    botonesPrincipales.append(botonPlanificarDestino)
+    botonesPrincipales += [botonPlanificarDestino]
     #guardar destino
-    botonGuardarDestino = tk.Button(frameIzquierdo, text="Guardar destino", font=("Helvetica", 10, "bold"), command=lambda: guardarDestino())#, command=lambda: cargarVentanaAnterior(ventanaPrincipal, ventanaGuardarDestino))
+    botonGuardarDestino = tk.Button(frameIzquierdo, text="Guardar destino", font=("Helvetica", 10, "bold"), command=lambda: guardarDestino())
     botonGuardarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonGuardarDestino.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
-    botonesPrincipales.append(botonGuardarDestino)
+    botonesPrincipales += [botonGuardarDestino]
     #borrar destino
-    botonBorrarDestino = tk.Button(frameIzquierdo, text="Borrar destino", font=("Helvetica", 10, "bold"))#, command=lambda: borrarDestino())#, command=lambda: cargarVentanaAnterior(ventanaPrincipal, ventanaBorrarDestino))
+    botonBorrarDestino = tk.Button(frameIzquierdo, text="Borrar destino", font=("Helvetica", 10, "bold"), command=lambda: borrarDestino())
     botonBorrarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonBorrarDestino.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
-    botonesPrincipales.append(botonBorrarDestino)
+    botonesPrincipales += [botonBorrarDestino]
     #modificar mapa
     botonModificarMapa = tk.Button(frameIzquierdo, text="Modificar mapa", font=("Helvetica", 10, "bold"), command=lambda: modificarMapa())
     botonModificarMapa.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonModificarMapa.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
-    botonesPrincipales.append(botonModificarMapa)
+    botonesPrincipales += [botonModificarMapa]
     #boton salir
     botonSalir = tk.Button(frameIzquierdo, text="Salir", font=("Helvetica", 10, "bold"), command=lambda: ventanaPrincipal.destroy())
     botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonSalir.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
 
+##########################################################################################
 # funcion para modificar el mapa
 def modificarMapa():
-    # validamos que se haya cargado un mapa
+# validamos que se haya cargado un mapa
     if mapa == [] and nuevoMapa == []:
         mb.showerror("Error", "Primero cargue un mapa o cree uno")
         return 0
@@ -230,101 +242,35 @@ def dibujarMapaExistente():
             if valor == "0":
                 boton = tk.Button(frameDerecho, text="0",font=("Arial",12), width=1, height=1, bg="black", fg="white", command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
                 boton.grid(row=fila,column=columna)
-                filas.append(boton)
+                filas += [boton]
             # en cualquier otro caso se muestra la letra
             elif valor == "N":
                 boton = tk.Button(frameDerecho, text="N",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
                 boton.grid(row=fila,column=columna)
-                filas.append(boton)
+                filas += [boton]
             elif valor == "R":
                 boton = tk.Button(frameDerecho, text="R",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
                 boton.grid(row=fila,column=columna)
-                filas.append(boton)
+                filas += [boton]
             elif valor == "L":
                 boton = tk.Button(frameDerecho, text="L",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
                 boton.grid(row=fila,column=columna)
-                filas.append(boton)
+                filas += [boton]
             elif valor == "S":
                 boton = tk.Button(frameDerecho, text="S",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
                 boton.grid(row=fila,column=columna)
-                filas.append(boton)
+                filas += [boton]
             elif valor == "C":
                 boton = tk.Button(frameDerecho, text="C",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
                 boton.grid(row=fila,column=columna)
-                filas.append(boton)
+                filas += [boton]
             elif valor == "ND":
                 boton = tk.Button(frameDerecho, text="ND",font=("Arial",12), width=1, height=1,command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
                 boton.grid(row=fila,column=columna)
-                filas.append(boton)
-        nuevoMapa.append(filas)
+                filas += [boton]
+        nuevoMapa += [filas]
 
-# funcion para guardar el destino seleccionado
-def guardarDestino():
-    # si no se ha seleccionado un destino
-    if inicioSeleccionado == [-1,-1] or destinoSeleccionado == [-1,-1]:
-        mb.showerror("Error", "No se ha seleccionado un destino")
-    else:
-        # se agrega el destino a la lista de destinos
-        global destinos
-        # nombreMapa = sacarNombreMapa()
-        destinos += [inicioSeleccionado,destinoSeleccionado]
-        # se guarda el destino en un archivo
-        guardarDestinoArchivo(inicioSeleccionado,destinoSeleccionado)
-        mb.showinfo("Información", "Destino guardado con éxito")
-
-def retornarDestinosArchivo(nombreArchivo):
-    archivo = open(nombreArchivo, "r")
-    destinos = archivo.readlines()
-    # se pasa los datos a una lista
-    # los datos seria una lista de listas que contiene los destinos
-    # el formato de cada destino es [filaInicio, columnaInicio, filaDestino, columnaDestino]
-    datos = []
-    for destino in destinos:
-        contarComas = 0 
-        filaInicio = ""
-        columnaInicio = ""
-        filaDestino = ""
-        columnaDestino = ""
-        if destino == "\n":
-            continue
-        for caracter in destino:
-            if caracter == ",":
-                contarComas += 1
-                continue
-            if contarComas == 0:
-                filaInicio += caracter
-            elif contarComas == 1:
-                columnaInicio += caracter
-            elif contarComas == 2:
-                filaDestino += caracter
-            elif contarComas == 3:
-                columnaDestino += caracter
-        datos += [[int(filaInicio), int(columnaInicio), int(filaDestino), int(columnaDestino)]]
-    archivo.close()
-    return datos
-
-def borrarDestinoArchivo(cordenada, nombreArchivo):
-    listaDestinos = retornarDestinosArchivo(nombreArchivo)
-    # se abre el archivo en modo write para sobreescribirlo
-    archivo = open(nombreArchivo, "w")
-    # se busca el destino en la lista de destinos
-    for destino in listaDestinos:
-        if destino[2] == cordenada[0] and destino[3] == cordenada[1]:
-            continue
-        # en caso contrario que no sea el destino que se quiere borrar, se guarda en un archivo
-        archivo.write(str(destino[0]) + "," + str(destino[1]) + "," + str(destino[2]) + "," + str(destino[3]) + "\n")
-    archivo.close()
-    
-
-
-def guardarDestinoArchivo(inicio, destino):
-    datos = str(inicio[0]) + "," + str(inicio[1]) + "," + str(destino[0]) + "," + str(destino[1])+ "\n"
-    # se abre el archivo en modo append para agregar el destino al final
-    # si el archivo no existe, se crea
-    archivo = open("destinos.txt", "a")
-    archivo.write(datos)
-    archivo.close()
-
+##########################################################################################
 
 #quita las opciones del menu
 def quitarOpciones():
@@ -337,6 +283,7 @@ def habilitarMapa():
     for fila in botones:
         for boton in fila:
             boton.config(state=tk.NORMAL)
+
 # bloquea los botones del mapa
 def bloquearMapa():
     for fila in botones:
@@ -349,14 +296,14 @@ def bloquearMapa():
 def cargarMapaInterfaz(archivo):
     global mapa 
     mapa = cargarMapa(archivo)
-    copiaMapa = mapa
-    filaTotal = contarFilas(copiaMapa)
-    columnaTotal = totalColumnas(copiaMapa)
+    filaTotal = contarFilas(mapa)
+    columnaTotal = totalColumnas(mapa)
     #limpiar frame derecho
     for widget in frameDerecho.winfo_children():
         widget.destroy()
     mostrarOpciones()
-    global botones
+
+    global botones #lista de botones del mapa
     botones = []
     for fila in range(filaTotal):
         filaBotones = []
@@ -364,24 +311,28 @@ def cargarMapaInterfaz(archivo):
             if mapa[fila][columna] == '0':
                 boton = tk.Button(frameDerecho, text="",font=("Arial", 12), width=1, height=1, bg="black", fg="black", command=lambda fila=fila, columna=columna: seleccionarBoton(fila, columna))
                 boton.grid(row=fila, column=columna)
-                filaBotones.append(boton)
+                filaBotones += [boton]
             else:
                 symbol = mapa[fila][columna]
                 if fila == inicioSeleccionado[0] and columna == inicioSeleccionado[1]:
                     boton = tk.Button(frameDerecho, text=symbol, font=("Arial", 12), width=1, height=1, bg="green", fg="green", command=lambda fila=fila, columna=columna: seleccionarBoton(fila, columna))
                     boton.grid(row=fila, column=columna)
-                    filaBotones.append(boton)
+                    filaBotones += [boton]
                     continue
                 elif fila == destinoSeleccionado[0] and columna == destinoSeleccionado[1]:
                     boton = tk.Button(frameDerecho, text=symbol, font=("Arial", 12), width=1, height=1, bg="red", fg="red", command=lambda fila=fila, columna=columna: seleccionarBoton(fila, columna))
                     boton.grid(row=fila, column=columna)
-                    filaBotones.append(boton)
+                    filaBotones += [boton]
                     continue
                 boton = tk.Button(frameDerecho, text=symbol, font=("Arial", 12), width=1, height=1, bg="white", fg="black", command=lambda fila=fila, columna=columna: seleccionarBoton(fila, columna))
                 boton.grid(row=fila, column=columna)
-                filaBotones.append(boton)
-        botones.append(filaBotones)
+                filaBotones += [boton]
+        botones += [filaBotones]
     bloquearMapa()
+    #mostrar nombre del mapa en la parte inferior
+    nombre = archivo[pos(archivo, '/')+1:pos(archivo, '.')]
+    labelNombreMapa = tk.Label(frameDerecho, text=nombre, font=("Arial", 12, "bold"))
+    labelNombreMapa.grid(row=filaTotal+1, column=0, columnspan=columnaTotal)
 
 """
 reinicia los colores de los botones al color original (blanco)
@@ -402,7 +353,6 @@ def decolorar(colores):
                 if boton.cget("bg") == "green" or boton.cget("bg") == "red":
                     boton.config(bg="white")
             
-
 #despliega el menu para seleccionar el punto de inicio y destino, tambien para calcular la ruta
 def seleccionarRuta():
     quitarOpciones()
@@ -414,6 +364,8 @@ def seleccionarRuta():
     botonCalcularRuta.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonConfirmarRuta = tk.Button(frameIzquierdo, text="Confirmar ruta", command=confirmarRuta, font=("Arial", 7), height=1, bg="white", fg="black")
     botonConfirmarRuta.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    botonVolver = tk.Button(frameIzquierdo, text="Volver", command=mostrarOpciones, font=("Arial", 7), height=1, bg="white", fg="black")
+    botonVolver.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
 #desaparece los botones de opciones de seleccionar ruta
 def confirmarRuta():
@@ -427,7 +379,6 @@ def confirmarRuta():
  S: cambia el color del boton seleccionado
  R: el boton no debe ser de otro color que no sea blanco
 """
-
 def seleccionarBoton(a,b):
     boton1 = botones[a][b]
     if(boton1.cget("bg") == "black" or boton1.cget("bg") == "red" or boton1.cget("bg") == "green"):
@@ -444,7 +395,6 @@ def seleccionarBoton(a,b):
         destinoSeleccionado[0] = a
         destinoSeleccionado[1] = b
         bloquearMapa()
-
 
 #---------------FUNCIONES DE CREACION DE MAPA------------------
 # funcion para crear un mapa
@@ -490,8 +440,8 @@ def dibujarMapa(filas, columnas):
         for columna in range(columnas):
             boton = tk.Button(frameDerecho, text="0",font=("Arial", 12), width=1, height=1, bg="black", fg = "white", command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
             boton.grid(row=fila, column=columna)
-            filas.append(boton)
-        nuevoMapa.append(filas)
+            filas += [boton]
+        nuevoMapa += [filas]
 
 #funciones de los botones, cambian las letras de los botones
 # E: fila: total de filas, columna: total de columnas
@@ -518,7 +468,122 @@ def cambiarColor(fila, columna):
         boton.config(bg="black")
         boton.config(fg="white")
 
-#guarda el mapa en un archivo csv
+# borra uno de los destinos registrados para un mapa
+def borrarDestino():
+    if (contarFilas(rutas))==0:
+        mb.showerror("Error", "No hay destinos registrados")
+        return 0
+    #obtiene el nombre del mapa
+    nombre = ""
+    for widget in frameDerecho.winfo_children():
+        if isinstance(widget, tk.Label):
+            nombre = widget.cget("text")
+
+    #limpiar el frameIzquierdo
+    for widget in frameIzquierdo.winfo_children():
+        widget.destroy()
+
+    #repintar a blanco los botones en rojo verde o morado
+    for widget in frameDerecho.winfo_children():
+        if widget.cget("bg") == "red" or widget.cget("bg") == "green" or widget.cget("bg") == "purple":
+            widget.config(bg="white", fg="black")
+    
+    #sacar la informacion del archivo txt con el camino
+    cargarDestinos(nombre)
+    #crear un combobox con los destinos
+    labelDestino = tk.Label(frameIzquierdo, text="Destino: ", font=("Arial", 12))
+    labelDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    comboDestino = ttk.Combobox(frameIzquierdo, state="readonly", font=("Arial", 12), width=5)
+    comboDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    lista = []
+    for i in range(contarFilas(rutas)):
+        lista += ["Ruta " + str(i+1)]
+    comboDestino['values'] = tuple(lista)
+    comboDestino.current(0)
+
+    #boton para mostrar el recorrido
+    botonMostrarRecorrido = tk.Button(frameIzquierdo, text="Mostrar recorrido", command=lambda: pintarTrayecto(rutas[comboDestino.current()]), font=("Arial", 12), height=1, bg="white", fg="black")
+    botonMostrarRecorrido.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    #boton para borrar el destino
+    botonBorrarDestino = tk.Button(frameIzquierdo, text="Borrar destino", command=lambda: borrarArchivo(comboDestino.current(), nombre), font=("Arial", 12), height=1, bg="white", fg="black")
+    botonBorrarDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    #boton para volver a la pantalla de opciones
+    botonVolver = tk.Button(frameIzquierdo, text="Volver", command=mostrarOpciones, font=("Arial", 12), height=1, bg="white", fg="black")
+    botonVolver.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+def borrarArchivo(destino, nombre):
+    global rutas
+    #borrar la ruta de la lista
+    i = 0
+    nuevaRuta = []
+    for ruta in rutas:
+        if i != destino:
+            nuevaRuta += [ruta]
+        i += 1
+    rutas = nuevaRuta
+
+    #borrar el archivo
+    import os
+    os.remove(nombre+str(destino)+".txt")
+    mb.showinfo("Informacion", "Destino borrado con exito")
+    mostrarOpciones()
+
+def planificarDestino():
+    if (contarFilas(rutas))==0:
+        mb.showerror("Error", "No hay destinos registrados")
+        return 0
+    #obtiene el nombre del mapa
+    nombre = ""
+    for widget in frameDerecho.winfo_children():
+        if isinstance(widget, tk.Label):
+            nombre = widget.cget("text")
+
+    #limpiar el frameIzquierdo
+    for widget in frameIzquierdo.winfo_children():
+        widget.destroy()
+
+    #repintar a blanco los botones en rojo verde o morado
+    for widget in frameDerecho.winfo_children():
+        if widget.cget("bg") == "red" or widget.cget("bg") == "green" or widget.cget("bg") == "purple":
+            widget.config(bg="white", fg="black")
+    
+    #sacar la informacion del archivo txt con el camino
+    cargarDestinos(nombre)
+    #crear un combobox con los destinos
+    labelDestino = tk.Label(frameIzquierdo, text="Destino: ", font=("Arial", 12))
+    labelDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    comboDestino = ttk.Combobox(frameIzquierdo, state="readonly", font=("Arial", 12), width=5)
+    comboDestino.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    lista = []
+    for i in range(contarFilas(rutas)):
+        lista += ["Ruta " + str(i+1)]
+    comboDestino['values'] = tuple(lista)
+    comboDestino.current(0)
+
+    #boton para mostrar el recorrido
+    botonMostrarRecorrido = tk.Button(frameIzquierdo, text="Mostrar recorrido", command=lambda: pintarTrayecto(rutas[comboDestino.current()]), font=("Arial", 12), height=1, bg="white", fg="black")
+    botonMostrarRecorrido.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    # entry para la hora de salida
+    labelHoraSalida = tk.Label(frameIzquierdo, text="Hora de salida: ", font=("Arial", 12))
+    labelHoraSalida.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    entryHoraSalida = tk.Entry(frameIzquierdo, font=("Arial", 12))
+    entryHoraSalida.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    
+    #boton para calcular la hora de llegada
+    botonCalcularHoraLlegada = tk.Button(frameIzquierdo, text="Calcular hora de llegada", command=lambda: calcularHoraLlegada(rutas[comboDestino.current()]), font=("Arial", 12), height=1, bg="white", fg="black")
+    botonCalcularHoraLlegada.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+    #boton para volver a la pantalla de opciones
+    botonVolver = tk.Button(frameIzquierdo, text="Volver", command=mostrarOpciones, font=("Arial", 12), height=1, bg="white", fg="black")
+    botonVolver.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+
+def calcularHoraLlegada(ruta):
+    pass
+#**********************SECCION DE LOGICA DEL PROGRAMA***********************
+#guarda el mapa creado en un archivo csv
 #R: si no hay nada para guardar, retorna 0 y un error diciendo que no hay nada para guardar
 def guardarMapa():
     # validar si hay algo para guardar
@@ -543,15 +608,93 @@ def guardarMapa():
     mb.showinfo("Información", "Mapa guardado con éxito")
     cargarMapaInterfaz(archivo.name)
 
-#--------------FUNCIONES DE SELECCION DE RUTA------------------
+#funcion para guardar el trayecto de destino en un archivo txt
+def guardarDestino():
+    global rutas
+    if rutas == []:
+        mb.showerror("Error", "Primero seleccione un destino")
+        return 0
+    # toma las coordenadas del camino y los guarda en un archivo con el nombre del mapa
+    i = 0
+    for ruta in rutas:
+        guardado(ruta, i)
+        i += 1
+    mb.showinfo("Información", "Ruta(s) guardada(s) con éxito")
 
+# guarda las diferentes rutas en archivos txt con el nombre del mapa y un numero
+# E: lista: lista de coordenadas, i: numero de ruta
+def guardado(lista, i):
+    nombre = ""
+    for widget in frameDerecho.winfo_children():
+        if isinstance(widget, tk.Label):
+            nombre = widget.cget("text")
+    archivo = open(nombre+str(i)+".txt", "w")
+    contenido = ""
+    for coordenada in lista:
+        contenido += (str(coordenada[0])+","+str(coordenada[1])+"\n")
+    #quitar el ultimo salto de linea
+    contenido = contenido[:-1]
+    archivo.write(contenido)
+    archivo.close()
+    
+# carga todos los destinos guardados en el mapa
+# E: nombre: nombre del mapa
+# S: guarda los destinos en la variable global rutas
+def cargarDestinos(nombre):
+    i = 0
+    while True:
+        archivo = None
+        try:
+            archivo = open(nombre+str(i)+".txt", "r")
+        except:
+            break
+        contenido= []
+        linea = archivo.readline()
+        while linea:
+            if(linea[-1]=="\n"):
+                linea = linea[:-1]
+            linea = separar(linea, ",")
+            coord = [int(linea[0]), int(linea[1])]      
+            contenido += [coord]
+            linea = archivo.readline()
+        archivo.close()
+        global rutas
+        rutas += [contenido]
+        i += 1 
+
+# muestra el recorrido en el mapa
+def pintarTrayecto(contenido):
+    # decolorar el mapa
+    for widget in frameDerecho.winfo_children():
+        if isinstance(widget, tk.Button):
+            if widget["bg"] == "purple" or widget["bg"] == "green" or widget["bg"] == "red":
+                widget.config(bg="white", fg="black")
+    contenido = contenido[:-1]
+    for coordenada in contenido:
+        boton = botones[coordenada[0]][coordenada[1]]
+        # si es el inicio, se pinta de verde
+        if coordenada == contenido[0]:
+            boton.config(bg="green", fg="white")
+        # si es el destino, se pinta de rojo
+        elif coordenada == contenido[-1]:
+            boton.config(bg="red", fg="white")
+        # el resto se pinta de morado
+        else:
+            boton.config(bg="purple", fg="white")
+        frameDerecho.update()
+        time.sleep(0.1)
+    
+#--------------FUNCIONES DE SELECCION DE RUTA------------------
 # habilita los botones del mapa para que se seleccione el inicio
 def seleccionarInicio():
     decolorar(0)
+    for fila in botones:
+        for boton in fila:
+            if boton["bg"] == "purple":
+                boton.config(bg="white", fg="black")
     inicioSeleccionado[0] = inicioSeleccionado[1] = -1
     mb.showinfo("Información", "Seleccione el punto de inicio\n cuando se seleccione, se tornará verde")
     habilitarMapa()
-
 
 # habilita los botones del mapa para que se seleccione el destino
 def seleccionarDestino():
@@ -559,137 +702,313 @@ def seleccionarDestino():
         mb.showerror("Error", "Seleccione el punto de inicio primero")
         return 0
     decolorar(1)
+    for fila in botones:
+        for boton in fila:
+            if boton["bg"] == "purple":
+                boton.config(bg="white", fg="black")
     destinoSeleccionado[0] = destinoSeleccionado[1] = -1
     mb.showinfo("Información", "Seleccione el punto de destino\n cuando se seleccione, se tornará rojo")
     habilitarMapa()
 
-##############################################################################################################
-"""
-Cuando  el  usuario  calcule  la  duración  de  su  trayecto  debe  tomar  en  cuenta  que  su  valor 
-puede variar según la hora del día en que realiza esta operación. A continuación, se muestra 
-los valores para cada uno de los elementos del mapa.
-"""
+#toma el mapa y lo convierte en una matriz de ceros, si hay un obstaculo, se pone una x
+def matrizCeros():
+    matriz = []
+    for i in range(contarFilas(mapa)):
+        lista = []
+        for j in range(totalColumnas(mapa)):
+            if mapa[i][j] == '0':
+                lista += ['X']
+            else:
+                lista += [0]
+        matriz += [lista]
+    return matriz
+
+#calcula la ruta entre un punto de inicio y un punto de destino
 def calcularRuta():
-    # L son calles donde su direccion de navegacion es de derecha a izquierda
-    # N son avenidas donde su direccion de navegacion es del sur al norte
-    # C son son las intersecciones de las calles y avenidas
-    # R son calles donde su direccion de navegacion es de izquierda a derecha
-    # S son avenidas donde su direccion de navegacion es del norte al sur
-    # ND son aquellas calles donde se puede navegar en ambas direcciones
-    # L y R calles, en horas pico 2, hora normal 2
-    # N y S avenidas, en horas pico 4, hora normal 1
-    # C cruces, en horas pico 3, hora normal 2
+    if inicioSeleccionado[0] == -1 and inicioSeleccionado[1] == -1 or destinoSeleccionado[0] == -1 and destinoSeleccionado[1] == -1:
+        mb.showerror("Error", "Seleccione el punto de inicio y destino primero")
+        return 0
+    decolorar(2)
+    for fila in botones:
+        for boton in fila:
+            if boton["bg"] == "purple":
+                boton.config(bg="white", fg="black")
     horasTotales = 0
     horasPico = 0
     filaActual = inicioSeleccionado[0]
     columnaActual = inicioSeleccionado[1]
     bucle = 0
+    camino = []
+    matrizCamino = matrizCeros()
+    #imprimir coordenadas de inicio y destino
     while filaActual != destinoSeleccionado[0] or columnaActual != destinoSeleccionado[1]:
-        posicion = mapa[filaActual][columnaActual]
-        if bucle == 150:
+        posicion=""
+        #comprobar si quien le precede es una posicion en la que se puede ir (que no salga de los limites del mapa)
+        try:
+            posicion = mapa[filaActual][columnaActual]
+            if posicion == 'N':
+                arriba = matrizCamino[filaActual - 1][columnaActual]
+            if posicion == 'S':
+                abajo = matrizCamino[filaActual + 1][columnaActual]
+            if posicion == 'L':
+                izquierda = matrizCamino[filaActual][columnaActual - 1]
+            if posicion == 'R':
+                derecha = matrizCamino[filaActual][columnaActual + 1]
+            if posicion == 'C' or posicion == 'ND':
+                arriba = matrizCamino[filaActual - 1][columnaActual]
+                abajo = matrizCamino[filaActual + 1][columnaActual]
+                izquierda = matrizCamino[filaActual][columnaActual - 1]
+                derecha = matrizCamino[filaActual][columnaActual + 1]
+        except:
+            bucle = contarFilas(mapa)*totalColumnas(mapa)
+        #ir pintando el camino en la matriz de botones
+        botones[filaActual][columnaActual].config(bg="purple", fg="white")
+        frameDerecho.update()
+        time.sleep(0.1)
+        # si se demora mucho en encontrar una ruta, se detiene
+        if bucle == contarFilas(mapa)*totalColumnas(mapa):
             mb.showerror("Error", "No se pudo encontrar una ruta")
             return 0
-        if filaActual == destinoSeleccionado[0] and columnaActual == destinoSeleccionado[1]:
+        # si llego al destino, se detiene
+        if [filaActual, columnaActual] == destinoSeleccionado:
+            camino += [[filaActual, columnaActual]]
             break
+        #CONDICION IMPORTANTE: solo avanzara si el que le sigue es igual o es C o ND
         if posicion == 'L':
-            columnaActual -= 1
-            horasTotales += 2
-            horasPico += 2
-            bucle += 1
-        elif posicion == 'N':
-            filaActual -= 1
-            horasTotales += 1
-            horasPico += 4
-            bucle += 1
-        elif posicion == 'C':
-            accionElegida = seleccionarCamino(filaActual, columnaActual)
-            if accionElegida == 1:
+            if mapa[filaActual][columnaActual - 1] not in ['L', 'C', 'ND']:
+                bucle = contarFilas(mapa)*totalColumnas(mapa)
+            else:
+                matrizCamino[filaActual][columnaActual] = 1
+                camino += [[filaActual, columnaActual]]
                 columnaActual -= 1
                 horasTotales += 2
                 horasPico += 2
                 bucle += 1
-            elif accionElegida == 2:
+        elif posicion == 'N':
+            if mapa[filaActual - 1][columnaActual] not in ['N', 'C', 'ND']:
+                bucle = contarFilas(mapa)*totalColumnas(mapa)
+            else:
+                matrizCamino[filaActual][columnaActual] = 1
+                camino += [[filaActual, columnaActual]]
                 filaActual -= 1
-                horasTotales += 2
-                horasPico += 2
-                bucle += 1
-            elif accionElegida == 3:
-                columnaActual += 1
-                horasTotales += 2
-                horasPico += 2
-                bucle += 1
-            elif accionElegida == 4:
-                filaActual += 1
-                horasTotales += 2
-                horasPico += 2
+                horasTotales += 1
+                horasPico += 4
                 bucle += 1
         elif posicion == 'R':
-            columnaActual += 1
-            horasTotales += 2
-            horasPico += 2
-            bucle += 1
-        elif posicion == 'S':
-            filaActual += 1
-            horasTotales += 1
-            horasPico += 4
-            bucle += 1
-        elif posicion == 'ND':
-            accionElegida = seleccionarCamino(filaActual, columnaActual)
-            if accionElegida == 1:
-                columnaActual -= 1
-                horasTotales += 2
-                horasPico += 2
-                bucle += 1
-            elif accionElegida == 2:
-                filaActual -= 1
-                horasTotales += 2
-                horasPico += 2
-                bucle += 1
-            elif accionElegida == 3:
+            if mapa[filaActual][columnaActual + 1] not in ['R', 'C', 'ND']:
+                bucle = contarFilas(mapa)*totalColumnas(mapa)
+            else:
+                matrizCamino[filaActual][columnaActual] = 1
+                camino += [[filaActual, columnaActual]]
                 columnaActual += 1
                 horasTotales += 2
                 horasPico += 2
                 bucle += 1
-            elif accionElegida == 4:
+        elif posicion == 'S':
+            if mapa[filaActual + 1][columnaActual] not in ['S', 'C', 'ND']:
+                bucle = contarFilas(mapa)*totalColumnas(mapa)
+            else:
+                matrizCamino[filaActual][columnaActual] = 1
+                camino += [[filaActual, columnaActual]]
                 filaActual += 1
+                horasTotales += 1
+                horasPico += 4
+                bucle += 1
+        elif posicion == 'C' or posicion == 'ND':
+            """
+            no sube si arriba es un obstaculo o S
+            no baja si abajo es un obstaculo o N
+            no avanza a la derecha si a la derecha es un obstaculo o L
+            no avanza a la izquierda si a la izquierda es un obstaculo o R
+            """
+            hayPaso = [True, True, True, True] #arriba, abajo, derecha, izquierda
+            if mapa[filaActual - 1][columnaActual] in ['0', 'S'] or matrizCamino[filaActual - 1][columnaActual] == 1:
+                hayPaso[0] = False
+            if mapa[filaActual + 1][columnaActual] in ['0', 'N'] or matrizCamino[filaActual + 1][columnaActual] == 1:
+                hayPaso[1] = False
+            if mapa[filaActual][columnaActual + 1] in ['0', 'L'] or matrizCamino[filaActual][columnaActual + 1] == 1:
+                hayPaso[2] = False
+            if mapa[filaActual][columnaActual - 1] in ['0', 'R'] or matrizCamino[filaActual][columnaActual - 1] == 1:
+                hayPaso[3] = False
+            
+            irPor=posiblesCaminos(hayPaso, filaActual, columnaActual)
+            if (irPor == 1):
+                #va hacia arriba
+                matrizCamino[filaActual][columnaActual] = 1
+                camino += [[filaActual, columnaActual]]
+                filaActual -= 1
+                horasTotales += 1
+                horasPico += 4
+                bucle += 1
+            elif (irPor == 2):    
+                #va hacia abajo
+                matrizCamino[filaActual][columnaActual] = 1
+                camino += [[filaActual, columnaActual]]
+                filaActual += 1
+                horasTotales += 1
+                horasPico += 4
+                bucle += 1
+            elif (irPor == 3):
+                #va hacia la derecha
+                matrizCamino[filaActual][columnaActual] = 1
+                camino += [[filaActual, columnaActual]]
+                columnaActual += 1
                 horasTotales += 2
                 horasPico += 2
                 bucle += 1
+            elif (irPor == 4):
+                #va hacia la izquierda
+                matrizCamino[filaActual][columnaActual] = 1
+                camino += [[filaActual, columnaActual]]
+                columnaActual -= 1
+                horasTotales += 2
+                horasPico += 2
+                bucle += 1
+            else:
+                bucle = contarFilas(mapa)*totalColumnas(mapa)
     
-    print("El tiempo total de su trayecto es de:", horasTotales, "horas")
+    botones[filaActual][columnaActual].config(bg="green")
     # mensaje de informacion con el tiempo total
-    mb.showinfo("Información", "El tiempo total de su trayecto es de: " + str(horasTotales) + " horas")
-    # mensaje de informacion con el tiempo total en horas pico
-    mb.showinfo("Información", "El tiempo total de su trayecto en horas pico es de: " + str(horasPico) + " horas")
-    return horasTotales
-# selecciona si debe ir por la derecha o izquierda, arriva o abajo
-def seleccionarCamino(filaActual, columnaActual):
-    # 1 izquierda, 2 arriba, 3 derecha, 4 abajo
-    if columnaActual > destinoSeleccionado[1]:
-        if filaActual > destinoSeleccionado[0]:
-            return 2
-        elif filaActual < destinoSeleccionado[0]:
-            return 4
-        else:
-            return 1
-    elif columnaActual < destinoSeleccionado[1]:
-        if filaActual > destinoSeleccionado[0]:
-            return 2
-        elif filaActual < destinoSeleccionado[0]:
-            return 4
-        else:
-            return 3
-    else:
-        if filaActual > destinoSeleccionado[0]:
-            return 2
-        elif filaActual < destinoSeleccionado[0]:
-            return 4
-        else:
-            return 0
-##############################################################################################################
+    mb.showinfo("Información", "El tiempo total de su trayecto es de: " + str(horasTotales) + " minutos\nEl tiempo total de su trayecto en horas pico es de: " + str(horasPico) + " minutos")
+    camino += [[horasTotales, horasPico]]
 
-#**********************SECCION DE LOGICA DEL PROGRAMA***********************
+    #agregar el camino a la lista de rutas
+    # si el camino ya existe, no lo agrega
+    global rutas
+    if camino not in rutas:
+        rutas += [camino]
+    return 0
+
+"""
+ dirige el camino si hay mas de una opcion
+ E: un arreglo con las posibilidades de caminos, la fila y columna actual
+ S: un numero que indica la direccion a tomar
+ 1 arriba, 2 abajo, 3 derecha, 4 izquierda, 0 sin paso
+"""
+def posiblesCaminos(posibilidad, filaActual, columnaActual): 
+    if posibilidad == [False, False, False, False]:
+        return 0
+    else:
+        #si el objetivo esta en direccion noreste
+        if filaActual > destinoSeleccionado[0] and columnaActual < destinoSeleccionado[1]: 
+            if posibilidad[0]: # si hay paso arriba
+                return 1
+            elif posibilidad[2]: # si hay paso derecha
+                return 3
+            elif posibilidad[1]: # si hay paso abajo
+                return 2
+            else: # sino
+                return 4
+        #si el objetivo esta en direccion noroeste
+        elif filaActual > destinoSeleccionado[0] and columnaActual > destinoSeleccionado[1]:
+            if posibilidad[0]: # si hay paso arriba
+                return 1
+            elif posibilidad[3]: # si hay paso izquierda
+                return 4
+            elif posibilidad[1]: # si hay paso abajo
+                return 2
+            else: # sino
+                return 3 
+        #si el objetivo esta en direccion sureste
+        elif filaActual < destinoSeleccionado[0] and columnaActual < destinoSeleccionado[1]:
+            if posibilidad[1]: # si hay paso abajo
+                return 2
+            elif posibilidad[2]: # si hay paso derecha
+                return 3
+            elif posibilidad[0]: # si hay paso arriba
+                return 1
+            else: # sino    
+                return 4
+        #si el objetivo esta en direccion suroeste
+        elif filaActual < destinoSeleccionado[0] and columnaActual > destinoSeleccionado[1]:
+            if posibilidad[1]: # si hay paso abajo
+                return 2
+            elif posibilidad[3]: # si hay paso izquierda
+                return 4
+            elif posibilidad[0]: # si hay paso arriba
+                return 1
+            else: # sino
+                return 3
+        # si lo tiene a la derecha
+        elif filaActual == destinoSeleccionado[0] and columnaActual < destinoSeleccionado[1]:
+            if posibilidad[2]: # si hay paso derecha  
+                return 3
+            elif posibilidad[0]: # si hay paso arriba
+                return 1
+            elif posibilidad[1]: # si hay paso abajo
+                return 2
+            else:
+                return 4
+        # si lo tiene a la izquierda
+        elif filaActual == destinoSeleccionado[0] and columnaActual > destinoSeleccionado[1]:
+            if posibilidad[3]: # si hay paso izquierda
+                return 4
+            elif posibilidad[0]: # si hay paso arriba
+                return 1
+            elif posibilidad[1]: # si hay paso abajo
+                return 2
+            else:
+                return 3
+        # si lo tiene arriba
+        elif filaActual > destinoSeleccionado[0] and columnaActual == destinoSeleccionado[1]:
+            if posibilidad[0]: # si hay paso arriba
+                return 1
+            elif posibilidad[2]: # si hay paso derecha
+                return 3
+            elif posibilidad[3]: # si hay paso izquierda
+                return 4
+            else:
+                return 2
+        # si lo tiene abajo
+        elif filaActual < destinoSeleccionado[0] and columnaActual == destinoSeleccionado[1]:
+            if posibilidad[1]: # si hay paso abajo
+                return 2
+            elif posibilidad[2]: # si hay paso derecha
+                return 3
+            elif posibilidad[3]: # si hay paso izquierda
+                return 4
+            else:
+                return 1
+#---------------------FUNCIONES AUXILIARES---------------------
+# retorna el largo de un string
+# E: un string
+# S: un numero que indica el largo del string
+def largoSTR(cadena):
+    longitud = 0
+    for i in cadena:
+        longitud += 1
+    return longitud
+
+#funcion que retorna la ultima posicion de un caracter en un string
+# E: un string y un caracter a buscar
+# S: un numero que indica la ultima posicion del caracter en el string
+def pos(cadena, caracter):
+    ultima_posicion = -1  # Valor predeterminado si no se encuentra el carácter
+    i = 0
+    while i < largoSTR(cadena):
+        if cadena[i] == caracter:
+            ultima_posicion = i
+        i += 1
+    return ultima_posicion
+
+# funcion que separa un string en una lista, reemplazo de split
+# E: un string y un caracter, separa el string cada vez que encuentra el caracter
+# S: una lista con los strings separados
+def separar(cadena, caracter):
+    lista = []
+    elemento = ""
+    for letra in cadena:
+        if letra != caracter:
+            elemento += letra
+        else:
+            lista += [elemento]
+            elemento = ""
+    lista += [elemento]
+    return lista
+
 #funcion que valida si el usuario y la contraseña son correctos
+# E: un usuario y una contraseña
+# S: un booleano que indica si el usuario y la contraseña son correctos
 def validarUsuario(usuario, contrasena):
     datos = usuario + ";" + contrasena
     archivo = open("usuarios.txt", "r")
@@ -699,13 +1018,6 @@ def validarUsuario(usuario, contrasena):
         return False
     else:
         return True
-
-#funcion que retorna la cantidad de letras de un texto
-def contarLetras(texto):
-    contador = 0
-    for letra in texto:
-        contador += 1
-    return contador
 
 #lectura de archivo csv
 def cargarMapa(nombreMapa):
@@ -742,7 +1054,6 @@ def totalColumnas(mapa):
     for columna in mapa[0]:
         columnaTotal += 1
     return columnaTotal
-
 #----------------------FIN DE LA SECCION DE LOGICA DEL PROGRAMA----------------------
 #inicio del programa
 ventanaAutenticacion()

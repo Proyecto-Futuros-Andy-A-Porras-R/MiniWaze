@@ -176,7 +176,7 @@ def mostrarOpciones():
     botonBorrarDestino.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
     botonesPrincipales.append(botonBorrarDestino)
     #modificar mapa
-    botonModificarMapa = tk.Button(frameIzquierdo, text="Modificar mapa", font=("Helvetica", 10, "bold"))#, command=lambda: cargarVentanaAnterior(ventanaPrincipal, ventanaModificarMapa))
+    botonModificarMapa = tk.Button(frameIzquierdo, text="Modificar mapa", font=("Helvetica", 10, "bold"), command=lambda: modificarMapa())
     botonModificarMapa.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonModificarMapa.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
     botonesPrincipales.append(botonModificarMapa)
@@ -185,6 +185,49 @@ def mostrarOpciones():
     botonSalir.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
     botonSalir.config(cursor="hand2", bg="#008CBA", fg="white", activebackground="#00BFFF", relief=tk.FLAT)
 
+# funcion para modificar el mapa
+def modificarMapa():
+    # validamos que se haya cargado un mapa
+    if mapa == [] and nuevoMapa == []:
+        mb.showerror("Error", "Primero cargue un mapa o cree uno")
+        return 0
+    # limpiar frameIzquierdo
+    for widget in frameIzquierdo.winfo_children():
+        widget.destroy()
+    # limpiar frameDerecho
+    for widget in frameDerecho.winfo_children():
+        widget.destroy()
+    # limpiar botones
+    botones = []
+    # limpiar variables globales
+    inicioSeleccionado[0] = inicioSeleccionado[1] = destinoSeleccionado[0] = destinoSeleccionado[1] = -1
+    # llamamos a la funcion dibujarMapaExistente, para que dibuje el mapa que ya se cargo
+    # pero con los botones habilitados para modificarlo, como si fuera un mapa nuevo
+    dibujarMapaExistente()
+
+# funcion para dibujar el mapa que ya se cargo, pero con los botones habilitados para modificarlo
+def dibujarMapaExistente():
+    mapaCopia = mapa
+    filaTotal = contarFilas(mapaCopia)
+    columnaTotal = contarFilas(mapaCopia[0])
+    global nuevoMapa
+    nuevoMapa = []
+    for fila in range(filaTotal):
+        filas = []
+        for columna in range(columnaTotal):
+            # saco el valor actual de la posicion actual
+            valor = mapaCopia[fila][columna]
+            # si es un 0 lo que hay en la posicion actual, se muestra el boton negro
+            if mapaCopia[fila][columna] == "0":
+                boton = tk.Button(frameDerecho, text=valor,font=("Arial",12), width=1, height=1, bg="black", fg="white", command=lambda fila=fila, columna=columna: cambiarColor(fila, columna))
+                boton.grid(row=fila,column=columna)
+                filas.append(boton)
+            # en cualquier otro caso se muestra la letra
+            else:
+                boton = tk.Button(frameDerecho, text=valor, font=("Arial",12), width=1, height=1, bg="black", fg="white", command=lambda fila=fila, columna= columna: cambiarColor(fila, columna))
+                boton.grid(row=fila,column=columna)
+                filas += boton 
+            nuevoMapa += filas
 
 # funcion para guardar el destino seleccionado
 def guardarDestino():

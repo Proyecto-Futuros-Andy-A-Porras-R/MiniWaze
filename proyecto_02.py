@@ -243,7 +243,49 @@ def guardarDestino():
         guardarDestinoArchivo(inicioSeleccionado,destinoSeleccionado)
         mb.showinfo("Información", "Destino guardado con éxito")
 
-# def sacarNombreMapa():
+def retornarDestinosArchivo(nombreArchivo):
+    archivo = open(nombreArchivo, "r")
+    destinos = archivo.readlines()
+    # se pasa los datos a una lista
+    # los datos seria una lista de listas que contiene los destinos
+    # el formato de cada destino es [filaInicio, columnaInicio, filaDestino, columnaDestino]
+    datos = []
+    for destino in destinos:
+        contarComas = 0 
+        filaInicio = ""
+        columnaInicio = ""
+        filaDestino = ""
+        columnaDestino = ""
+        if destino == "\n":
+            continue
+        for caracter in destino:
+            if caracter == ",":
+                contarComas += 1
+                continue
+            if contarComas == 0:
+                filaInicio += caracter
+            elif contarComas == 1:
+                columnaInicio += caracter
+            elif contarComas == 2:
+                filaDestino += caracter
+            elif contarComas == 3:
+                columnaDestino += caracter
+        datos += [[int(filaInicio), int(columnaInicio), int(filaDestino), int(columnaDestino)]]
+    archivo.close()
+    return datos
+
+def borrarDestinoArchivo(cordenada, nombreArchivo):
+    listaDestinos = retornarDestinosArchivo(nombreArchivo)
+    # se abre el archivo en modo write para sobreescribirlo
+    archivo = open(nombreArchivo, "w")
+    # se busca el destino en la lista de destinos
+    for destino in listaDestinos:
+        if destino[2] == cordenada[0] and destino[3] == cordenada[1]:
+            continue
+        # en caso contrario que no sea el destino que se quiere borrar, se guarda en un archivo
+        archivo.write(str(destino[0]) + "," + str(destino[1]) + "," + str(destino[2]) + "," + str(destino[3]) + "\n")
+    archivo.close()
+    
 
 
 def guardarDestinoArchivo(inicio, destino):

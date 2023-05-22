@@ -337,6 +337,7 @@ def cargarMapaInterfaz(archivo):
     nombreMapaActual = nombre
     labelNombreMapa = tk.Label(frameDerecho, text=nombre, font=("Arial", 12, "bold"))
     labelNombreMapa.grid(row=filaTotal+1, column=0, columnspan=columnaTotal)
+    cargarDestinos(nombreMapaActual)
 
 """
 reinicia los colores de los botones al color original (blanco)
@@ -535,7 +536,7 @@ def borrarArchivo(destino, nombre):
     mostrarOpciones()
 
 def planificarDestino():
-    cargarDestinos(nombreMapaActual)
+    # cargarDestinos(nombreMapaActual)
     if (contarFilas(rutas))==0:
         mb.showerror("Error", "No hay destinos registrados")
         return 0
@@ -752,7 +753,7 @@ def pintarTrayecto(contenido):
         if isinstance(widget, tk.Button):
             if widget["bg"] == "purple" or widget["bg"] == "green" or widget["bg"] == "red":
                 widget.config(bg="white", fg="black")
-    contenido = contenido[:-1]
+    contenido = contenido
     for coordenada in contenido:
         boton = botones[coordenada[0]][coordenada[1]]
         # si es el inicio, se pinta de verde

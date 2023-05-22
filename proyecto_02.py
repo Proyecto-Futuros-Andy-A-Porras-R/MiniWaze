@@ -536,7 +536,7 @@ def borrarArchivo(destino, nombre):
     mostrarOpciones()
 
 def planificarDestino():
-    # cargarDestinos(nombreMapaActual)
+    cargarDestinos(nombreMapaActual)
     if (contarFilas(rutas))==0:
         mb.showerror("Error", "No hay destinos registrados")
         return 0
@@ -726,6 +726,8 @@ def guardado(lista, i):
 # S: guarda los destinos en la variable global rutas
 def cargarDestinos(nombre):
     i = 0
+    global rutas
+    rutas = []
     while True:
         archivo = None
         try:
@@ -742,7 +744,6 @@ def cargarDestinos(nombre):
             contenido += [coord]
             linea = archivo.readline()
         archivo.close()
-        global rutas
         rutas += [contenido]
         i += 1 
 

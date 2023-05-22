@@ -575,92 +575,89 @@ def planificarDestino():
     # entry para la hora de salida
     labelHoraSalida = tk.Label(frameIzquierdo, text="Hora de salida: ", font=("Arial", 12))
     labelHoraSalida.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
-    entryHoraSalida = tk.Entry(frameIzquierdo, font=("Arial", 12))
-    entryHoraSalida.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    # combobox para la hora de salida y minutos
+    frameHoraSalida = tk.Frame(frameIzquierdo)
+    frameHoraSalida.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    comboHoraSalida = ttk.Combobox(frameHoraSalida, state="readonly", font=("Arial", 12), width=5)
+    #colocar en el frame correspondiente
+    comboHoraSalida.grid(row = 0, column= 0)
+    lista = []
+    for i in range(24):
+        if i < 10:
+            lista += ["0" + str(i)]
+        else:
+            lista += [str(i)]
+    comboHoraSalida['values'] = tuple(lista)
+    comboHoraSalida.current(0)
+    comboMinutosSalida = ttk.Combobox(frameHoraSalida, state="readonly", font=("Arial", 12), width=5)
+    comboMinutosSalida.grid(row=0, column=1)
+    lista = []
+    for i in range(60):
+        if i < 10:
+            lista += ["0" + str(i)]
+        else: 
+            lista += [str(i)]
+    comboMinutosSalida['values'] = tuple(lista)
+    comboMinutosSalida.current(0)
     
     #boton para calcular la hora de llegada
-    botonCalcularHoraLlegada = tk.Button(frameIzquierdo, text="Calcular hora de llegada", command=lambda: calcularHoraLlegada(rutas[comboDestino.current()],entryHoraSalida.get()), font=("Arial", 12), height=1, bg="white", fg="black")
+    botonCalcularHoraLlegada = tk.Button(frameIzquierdo, text="Calcular hora de llegada", command=lambda: calcularHoras(rutas[comboDestino.current()],comboHoraSalida.get(), comboMinutosSalida.get()), font=("Arial", 12), height=1, bg="white", fg="black")
     botonCalcularHoraLlegada.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
     #boton para volver a la pantalla de opciones
     botonVolver = tk.Button(frameIzquierdo, text="Volver", command=mostrarOpciones, font=("Arial", 12), height=1, bg="white", fg="black")
     botonVolver.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
-# funcion que calcula la hora de llegada
-# segun la ruta y la hora de salida
-# retriccion: la hora de salida debe ser en formato hh:mm
-# R: si la hora de salida no es valida, muestra un error diciendo que la hora de salida no es valida
-def calcularHoraLlegada(ruta, horaSalida):
-    # validar que la hora de salida sea valida
-    if validarHora(horaSalida) == False:
-        mb.showerror("Error", "La hora de salida no es valida")
-        return 0
-    # obtener la hora de salida
-    hora = int(horaSalida[:2])
-    minutos = int(horaSalida[3:])
-    # obtener la duracion de la ruta
-    duracion, duracionPico = calcularDuracion(ruta)
-    # sumar la duracion a los minutos
-    duracion = calculoHora(hora, minutos+duracion)
-    duracionPico = calculoHora(hora, minutos+duracionPico)
-    # mostrar la hora de llegada
-    mb.showinfo("Hora de llegada", "Hora de llegada: "+duracion+"\nHora de llegada en hora pico: "+duracionPico)
-
-# funcion para que la hora tenga el formato hh:mm
-# restriccion: la hora debe ser un numero entero
-# R: retorna la hora con el formato hh:mm
-def calculoHora(hora, minutos):
-    if minutos >= 60:
-        hora += 1
-        minutos -= 60
-    if hora >= 24:
-        hora -= 24
-    if hora < 10:
-        hora = "0"+str(hora)
-    if minutos < 10:
-        minutos = "0"+str(minutos)
-    return str(hora)+":"+str(minutos)
-# funcion que calcula la duracion de una ruta
-# restriccion: la ruta debe ser una lista de listas
-# R: retorna la duracion de la ruta
-def calcularDuracion(ruta):
-    tiempo = 0
-    tiempoPico = 0
-    for movimiento in ruta[:-2]:
-        print(movimiento, mapa[movimiento[0]][movimiento[1]])
-        if mapa[movimiento[0]][movimiento[1]] == "C":
-            tiempo += 2
-            tiempoPico += 3
-        elif mapa[movimiento[0]][movimiento[1]] == "N" or mapa[movimiento[0]][movimiento[1]] == "S":
-            tiempo += 1
-            tiempoPico += 4
-        elif mapa[movimiento[0]][movimiento[1]] == "R" or mapa[movimiento[0]][movimiento[1]] == "L":
-            tiempo += 2
-            tiempoPico += 2
-    return tiempo, tiempoPico
-
-
-# funcion que valida que la hora sea valida
-# restriccion: la hora debe ser en formato hh:mm    
-# R: si la hora es valida retorna True, si no retorna False
-def validarHora(hora):
-    # validar que la hora sea en formato hh:mm
-    if contarCaracteres(hora) == 5:
-        for i in range(5):
-            if i == 2:
-                if hora[i] != ":":
-                    return False
-            else:
-                for j in range(10):
-                    if hora[i] == str(j):
-                        break
-                    elif j > 2 and i == 0:
-                        return False
-                    elif j > 5 and i == 3:
-                        return False
+"""
+Funcion que calcula la hora de llegada
+E: ruta, hora de salida
+S: hora de llegada
+"""
+def calcularHoras(ruta, horaSalida, minutosSalida):
+    horas = ruta[-1]
+    horaNormal = horas[0]
+    horaPico = horas[1]
+    
+    tiempoNormal = ""
+    # si la suma se pasa de 60 minutos
+    if(int(minutosSalida)+int(horaNormal) >= 60):
+        if(int(horaSalida)+1 > 23):
+            tiempoNormal = "00:"
+        else:
+            tiempoNormal = str(horaSalida+1) + ":"
+        if(int(minutosSalida)+int() < 70):
+            tiempoNormal += "0"+str(int(minutosSalida)+int(horaNormal)-60)
+        else:
+            tiempoNormal += str(int(minutosSalida)+int(horaNormal)-60)
     else:
-        return False
-    return True
+        tiempoNormal = str(horaSalida) + ":"
+        if(int(minutosSalida)+int(horaNormal) < 10):
+            tiempoNormal += "0"+str(int(minutosSalida)+int(horaNormal))
+        else:
+            tiempoNormal += str(int(minutosSalida)+int(horaNormal))
+    #mostrar en label la hora de llegada normal y la hora de llegada en hora pico
+    labelHoraLlegadaNormal = tk.Label(frameIzquierdo, text="Hora de llegada normal: " + tiempoNormal, font=("Arial", 12))
+    labelHoraLlegadaNormal.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
+    #hora de llegada en hora pico
+    tiempoPico = ""
+    # si la suma se pasa de 60 minutos
+    if(int(minutosSalida)+int(horaPico) >= 60):
+        if(horaSalida+1 > 23):
+            tiempoPico = "00:"
+        else:
+            tiempoPico = str(horaSalida+1) + ":"
+        if(int(minutosSalida)+int(horaPico) < 70):
+            tiempoPico += "0"+str(int(minutosSalida)+int(horaPico)-60)
+        else:
+            tiempoPico += str(int(minutosSalida)+int(horaPico)-60)
+    else:
+        tiempoPico = str(horaSalida) + ":"
+        if(int(minutosSalida)+int(horaPico) < 10):
+            tiempoPico += "0"+str(int(minutosSalida)+int(horaPico))
+        else:
+            tiempoPico += str(int(minutosSalida)+int(horaPico))
+    labelHoraLlegadaPico = tk.Label(frameIzquierdo, text="Hora de llegada en hora pico: " + tiempoPico, font=("Arial", 12))
+    labelHoraLlegadaPico.pack(padx=5, pady=5, ipadx=5, ipady=5, fill=tk.X)
 
 
 
